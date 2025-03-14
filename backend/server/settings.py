@@ -1,15 +1,11 @@
 
 from datetime import timedelta
 from pathlib import Path
-<<<<<<< HEAD
 import os
 import dj_database_url
-
-=======
 from dotenv import load_dotenv
-import os
 load_dotenv()
->>>>>>> 6a356dfe3da5d2d10fcbd53123ae8b5e01b9a56c
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
