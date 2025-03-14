@@ -96,6 +96,11 @@ DATABASES = {
     )
 }
 
+# Manually add search_path to OPTIONS
+DATABASES["default"]["OPTIONS"] = {
+    "options": "-c search_path=user_database"
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
