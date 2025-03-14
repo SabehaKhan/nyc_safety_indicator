@@ -6,10 +6,13 @@ import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "../context/auth-context"
 import { useRouter } from "next/navigation"
+import AxiosInstance from "../../components/AxiosInstance"
+
+
 
 export default function Register() {
   const router = useRouter()
-  const { login, isLoading } = useAuth()
+  const { login, isLoading } = useAuth();
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -17,24 +20,38 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
+  
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
+    const handleSubmit = async (e: { preventDefault: () => void }) => {
+      e.preventDefault();
+      setError(""); // Clear previous errors
+      
+  
+      try {
+        // Send registration request to the backend
+        const response = await AxiosInstance.post("/register/", {
+          first_name: firstName,
+          last_name: lastName,
+          email:email,
+          password:password,
+        });
 
-    try {
-      // Pass the full name constructed from first and last name
-      const fullName = `${firstName} ${lastName}`
-      await login(email, password, fullName)
-      router.push("/")
-    } catch (err) {
-      setError("Registration failed. Please try again.")
-    }
-  }
+        // If registration is successful, log the user in automatically
+        if (response.data.token) {
+          // Store the token in localStorage
+          localStorage.setItem("authToken", response.data.token);
+          localStorage.setItem("refreshToken", response.data.refresh_token);
+          const fullName = `${firstName} ${lastName}`;
+          await login(email, password, fullName);
+          router.push("/");
+        } else {
+          setError("Registration failed. Please try again.");
+        }
+      } catch (err) {
+        setError("Registration failed. Please try again.");
+      } 
+    };
+
 
   return (
     <div className="min-h-screen flex flex-col">

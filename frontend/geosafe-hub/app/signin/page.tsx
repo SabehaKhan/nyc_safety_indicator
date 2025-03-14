@@ -6,24 +6,40 @@ import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "../context/auth-context"
 import { useRouter } from "next/navigation"
+import AxiosInstance from "../../components/AxiosInstance";
 
 export default function SignIn() {
   const router = useRouter()
-  const { login, isLoading } = useAuth()
+  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setError("");
     try {
-      await login(email, password)
-      router.push("/")
+      // Send login request to the backend
+      const response = await AxiosInstance.post("/login/", {
+        email:email,
+        password:password,
+      });
+
+      // Check if response contains the access token
+      if (response.data.access) {
+        // Store the access token and refresh token in localStorage
+        localStorage.setItem("authToken", response.data.access);
+        localStorage.setItem("refreshToken", response.data.refresh_token);
+        console.log("successful login")
+        await login(email, password);
+
+        // Redirect user to the home page after successful login
+        router.push("/");
+      } else {
+        setError("Invalid email or password"); // Handle invalid credentials
+      }
     } catch (err) {
-      setError("Invalid email or password")
-    }
+      setError("Invalid email or password"); // Handle any errors (e.g., network issues)
+    } 
   }
 
   return (
