@@ -1,4 +1,9 @@
-Django==4.2.20
+dj_database_url==2.3.0
+Django==5.1.7
 djangorestframework==3.15.2
 djangorestframework_simplejwt==5.5.0
 python-dotenv==1.0.1
+Requests==2.32.3
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+django-cors-headers==4.7.0
