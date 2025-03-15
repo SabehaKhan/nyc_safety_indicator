@@ -1,7 +1,7 @@
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import RegisterViewSet
-from .views import LoginView
 from rest_framework.authtoken.views import obtain_auth_token  # Import token login view
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
