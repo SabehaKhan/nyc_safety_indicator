@@ -22,5 +22,5 @@ python3 manage.py runserver
 cd ../frontend
 cd geosafe-hub
 npm install
-npm start
+npm run dev
 ```
