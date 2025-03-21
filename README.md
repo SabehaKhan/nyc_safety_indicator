@@ -5,6 +5,7 @@ git clone <repository-url>
 cd NYC-Safety-Indicator
 ```
 
+python version: Python 3.9.6
 ```bash
 # Set up the backend
 cd backend
