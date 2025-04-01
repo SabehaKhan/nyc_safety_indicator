@@ -11,7 +11,6 @@ export const metadata = {
   title: "GeoSafe Hub - Know Your Neighborhood's Safety",
   description:
     "Explore safety information for any location. Make informed decisions about where to live, work, or visit.",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -32,6 +31,3 @@ export default function RootLayout({
   )
 }
 
-
-
-import './globals.css'

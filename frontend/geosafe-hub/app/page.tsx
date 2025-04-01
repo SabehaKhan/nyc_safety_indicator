@@ -5,6 +5,8 @@ import Footer from "./components/footer"
 import AuthenticatedHeader from "./components/authenticated-header"
 import { Suspense } from "react"
 import TestimonialMarquee from "./components/testimonial-marquee"
+// Import the HeaderMapButton component
+import HeaderMapButton from "./components/header-map-button"
 
 // Dummy UserDashboardPreview component to resolve the error
 function UserDashboardPreview() {
@@ -17,15 +19,15 @@ export default function Home() {
       {/* Background Image */}
       <div className="fixed inset-0 z-0">
         <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ZriLYRX5gZ911BKSSH5C207I3WKmgR.png"
-          alt="City at night"
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/579793-aerial_view-vertical-New_York_City.jpg-gdpMVsd9XvCHK8jhCjtQCtScS50yT8.jpeg"
+          alt="NYC Satellite View"
           fill
           className="object-cover"
           priority
           quality={100}
         />
         {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px]" />
       </div>
 
       {/* Content */}
@@ -41,6 +43,8 @@ export default function Home() {
               Explore safety information for any location. Make informed decisions about where to live, work, or visit.
             </p>
 
+            {/* Add the HeaderMapButton to the search section */}
+            {/* Find the search section and add the button after the search input */}
             <div className="max-w-3xl mx-auto mb-4 relative">
               <div className="flex">
                 <div className="relative flex-1">
@@ -70,6 +74,9 @@ export default function Home() {
                 <button className="px-8 py-4 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors">
                   Search
                 </button>
+                <div className="ml-2 flex items-center justify-center">
+                  <HeaderMapButton />
+                </div>
               </div>
             </div>
             <p className="text-gray-300 mb-12">Try Search "Manhattan" or "Brooklyn"</p>

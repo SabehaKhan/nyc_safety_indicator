@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Bell, Home, Map, Shield, Settings, User, LogOut, Menu, X, Star, BarChart3, AlertTriangle } from "lucide-react"
+import { Home, User, LogOut, Menu, X, Star, Phone, BarChart3 } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 export default function DashboardLayout({
@@ -19,12 +19,9 @@ export default function DashboardLayout({
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: Home },
     { name: "Saved Locations", href: "/dashboard/saved-locations", icon: Star },
-    { name: "Safety Map", href: "/dashboard/map", icon: Map },
-    { name: "Safety Alerts", href: "/dashboard/alerts", icon: Bell },
+    { name: "Emergency Contacts", href: "/dashboard/emergency-contacts", icon: Phone },
     { name: "Safety Reports", href: "/dashboard/reports", icon: BarChart3 },
-    { name: "Safety Profile", href: "/dashboard/profile", icon: Shield },
-    { name: "Emergency Contacts", href: "/dashboard/emergency-contacts", icon: AlertTriangle },
-    { name: "Account Settings", href: "/dashboard/settings", icon: Settings },
+    { name: "Profile & Settings", href: "/dashboard/profile", icon: User },
   ]
 
   return (
@@ -136,7 +133,6 @@ export default function DashboardLayout({
           <div className="flex items-center gap-4 ml-auto">
             <button className="relative p-1 text-gray-500 rounded-full hover:bg-gray-100 hover:text-gray-600">
               <span className="sr-only">View notifications</span>
-              <Bell className="h-6 w-6" />
               <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
             </button>
             <div className="flex items-center">

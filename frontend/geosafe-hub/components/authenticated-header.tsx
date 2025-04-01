@@ -341,4 +341,3 @@ export default function AuthenticatedHeader() {
     </>
   )
 }
-
