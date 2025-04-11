@@ -25,6 +25,7 @@ export default function DashboardLayout({
     { name: "Safety Profile", href: "/dashboard/profile", icon: Shield },
     { name: "Emergency Contacts", href: "/dashboard/emergency-contacts", icon: AlertTriangle },
     { name: "Account Settings", href: "/dashboard/settings", icon: Settings },
+    { name: "Emergency Test", href: "/dashboard/emergency-test", icon: AlertTriangle },
   ]
 
   return (

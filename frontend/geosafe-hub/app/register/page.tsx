@@ -10,6 +10,7 @@ import AxiosInstance from "../../components/AxiosInstance";
 import { GoogleLogin } from "@react-oauth/google";
 
 
+
 export default function Register() {
   const router = useRouter();
   const { login, isLoading } = useAuth();
@@ -26,14 +27,14 @@ export default function Register() {
         const res = await AxiosInstance.post("/google-login/", {
         token: response.credential, 
       });
+     
       const first_name_google_client = res.data.first_name;
       const last_name_google_client = res.data.last_name;
       const google_email = res.data.email
       const google_full_name = `${first_name_google_client} ${last_name_google_client}`;
       // Assuming the backend sends user info, save the auth tokens
       localStorage.setItem("authToken", res.data.access);
-      localStorage.setItem("refreshToken", res.data.refresh_token);
-      
+      localStorage.setItem("refreshToken", res.data.refresh);
 
       // Redirect user to the home page
       login(google_email, '', google_full_name)
@@ -60,7 +61,8 @@ export default function Register() {
       if (response.data.token) {
         // Store the token in localStorage
         localStorage.setItem("authToken", response.data.token);
-        localStorage.setItem("refreshToken", response.data.refresh_token);
+        localStorage.setItem("refreshToken", response.data.refresh);
+        
         const fullName = `${firstName} ${lastName}`;
         await login(email, password, fullName);
         router.push("/");
