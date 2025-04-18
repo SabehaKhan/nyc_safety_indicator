@@ -182,6 +182,7 @@ const EmergencyPage = () => {
           <option value="Verizon">Verizon</option>
           <option value="T-Mobile">T-Mobile</option>
           <option value="Sprint">Sprint</option>
+          <option value="Lyca">Lyca</option>
           {/* Add more carrier options here */}
         </select>
 

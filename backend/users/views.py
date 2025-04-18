@@ -34,6 +34,7 @@ SMS_GATEWAYS = {
     'metropcs': '@mymetropcs.com',
     'cricket': '@sms.cricketwireless.net',
     'boost': '@myboostmobile.com',
+    'lyca': '@mms.us.lycamobile.com'
 }
 
 User = get_user_model()
@@ -192,10 +193,15 @@ class CrimeNews(APIView):
         api_key = settings.NEWS_DATA_API
 
         url = (
-        f"https://newsdata.io/api/1/news?apikey={api_key}"
-        f"&q=(sexual%20OR%20assault%20OR%20robbery%20OR%20shooting%20OR%20stabbing%20OR%20mugging%20OR%20burglary%20OR%20violence)%20AND%20(nyc%20OR%20brooklyn%20OR%20bronx%20OR%20queens%20OR%20staten%20island%20OR%20subway)"
-        f"&country=us&language=en&category=crime"
+        f"https://newsdata.io/api/1/news?"
+        f"apikey={api_key}"
+        "&q=ny OR nyc"
+        "&country=us"
+        "&language=en"
+        "&category=crime"
     )
+
+
 
 
         response = requests.get(url)
