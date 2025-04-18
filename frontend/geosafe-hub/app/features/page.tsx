@@ -8,15 +8,15 @@ export default function FeaturesPage() {
       {/* Background Image */}
       <div className="fixed inset-0 z-0">
         <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ZriLYRX5gZ911BKSSH5C207I3WKmgR.png"
-          alt="City at night"
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/579793-aerial_view-vertical-New_York_City.jpg-gdpMVsd9XvCHK8jhCjtQCtScS50yT8.jpeg"
+          alt="NYC Satellite View"
           fill
           className="object-cover"
           priority
           quality={100}
         />
         {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px]" />
       </div>
 
       <header className="container mx-auto px-4 py-4 flex items-center justify-between relative z-10">
@@ -49,7 +49,7 @@ export default function FeaturesPage() {
 
       <main className="flex-1 flex items-center justify-center relative z-10">
         <div className="text-center max-w-2xl mx-auto px-4">
-          <div className="bg-black/30 backdrop-blur-md border border-white/20 rounded-xl p-8">
+          <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-xl p-8">
             <h1 className="text-4xl font-bold mb-6 text-white">Features</h1>
             <p className="text-xl text-blue-100 mb-8">
               This page is under construction. Check back soon for detailed information about GeoSafe Hub features.

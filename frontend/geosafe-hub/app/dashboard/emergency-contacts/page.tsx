@@ -1,225 +1,118 @@
-"use client";
-import { useEffect, useState } from "react";
-import AxiosInstance from "@/components/AxiosInstance";
+"use client"
 
-const EmergencyPage = () => {
-  const [emergencyName, setEmergencyName] = useState("");
-  const [emergencyPhone, setEmergencyPhone] = useState("");
-  const [emergencyCarrier, setEmergencyCarrier] = useState("");
-  const [emergencyContacts, setEmergencyContacts] = useState<
-    { id: number; name: string; phone_number: string; carrier: string }[]
-  >([]);
+import { useState } from "react"
+import { Phone, Plus, User, Edit, Trash2 } from "lucide-react"
 
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    setToken(storedToken);
-  }, []);
-
-  useEffect(() => {
-    if (token) {
-      fetchEmergencyContact();
-    }
-  }, [token]);
-
-  // Function to Refresh Token
-  const refreshAccessToken = async () => {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) {
-        console.error("No refresh token found.");
-        return null;
-      }
-      const response = await AxiosInstance.post("/token/refresh/", {
-        refresh: refreshToken,
-      });
-
-      localStorage.setItem("authToken", response.data.access);
-      setToken(response.data.access); // Update state with new token
-      return response.data.access;
-    } catch (error) {
-      console.error("Token refresh failed:", error);
-      return null;
-    }
-  };
-
-  // Fetch Emergency Contacts with Token Refreshing
-  const fetchEmergencyContact = async () => {
-    try {
-      let authToken = token;
-      if (!authToken) {
-        console.warn("No access token found. Attempting to refresh...");
-        authToken = await refreshAccessToken();
-        if (!authToken) {
-          console.error("Failed to refresh token. User needs to log in again.");
-          return;
-        }
-      }
-
-      const response = await AxiosInstance.get("/emergency/fetch/", {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      setEmergencyContacts(response.data);
-    } catch (error) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        fetchEmergencyContact(); // Retry fetching after refreshing
-      } else {
-        console.error(error);
-      }
-    }
-  };
-
-  // Delete Emergency Contact
-  const deleteEmergencyContact = async (name: string, phone_number: string) => {
-    try {
-      let authToken = token;
-      if (!authToken) {
-        console.warn("No access token found. Attempting to refresh...");
-        authToken = await refreshAccessToken();
-        if (!authToken) {
-          console.error("Failed to refresh token. User needs to log in again.");
-          return;
-        }
-      }
-
-      const response = await AxiosInstance.post(
-        "/emergency/delete/",
-        { name, phone_number },
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // Update contacts by removing the deleted contact
-      setEmergencyContacts(response.data);
-    } catch (error) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        fetchEmergencyContact(); // Retry fetching after refreshing
-      } else {
-        console.error(error);
-        alert("Failed to delete emergency contact.");
-      }
-    }
-  };
-
-  // Handle Adding Emergency Contact
-  const handleAddEmergencyContact = async () => {
-    if (!emergencyName || !emergencyPhone) {
-      alert("Please enter a name and phone number");
-      return;
-    }
-
-    try {
-      let authToken = token;
-      if (!authToken) {
-        authToken = await refreshAccessToken();
-        if (!authToken) {
-          alert("Session expired. Please log in again.");
-          return;
-        }
-      }
-
-      const response = await AxiosInstance.post(
-        "/emergency/add/",
-        {
-          name: emergencyName,
-          phone_number: emergencyPhone,
-          carrier: emergencyCarrier,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setEmergencyContacts([...emergencyContacts, response.data]);
-      fetchEmergencyContact();
-    } catch (error) {
-      console.error("Error adding emergency contact:", error);
-      alert("Failed to add emergency contact.");
-    }
-  };
+export default function EmergencyContactsDashboard() {
+  const [contacts, setContacts] = useState([
+    { id: 1, name: "Jane Doe", relationship: "Spouse", phone: "+1 (555) 987-6543" },
+    { id: 2, name: "Michael Doe", relationship: "Brother", phone: "+1 (555) 456-7890" },
+    { id: 3, name: "Sarah Johnson", relationship: "Friend", phone: "+1 (555) 234-5678" },
+  ])
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold text-center mb-6">
-        Emergency Contacts
-      </h1>
-
-      {/* Add Emergency Contact */}
-      <h2 className="text-xl font-semibold mb-4">Add Emergency Contact</h2>
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Emergency Contact Name"
-          value={emergencyName}
-          onChange={(e) => setEmergencyName(e.target.value)}
-          className="w-full p-3 mb-3 border border-gray-300 rounded-lg"
-        />
-        <input
-          type="text"
-          placeholder="Emergency Contact Phone"
-          value={emergencyPhone}
-          onChange={(e) => setEmergencyPhone(e.target.value)}
-          className="w-full p-3 mb-3 border border-gray-300 rounded-lg"
-        />
-        <select
-          value={emergencyCarrier}
-          onChange={(e) => setEmergencyCarrier(e.target.value)}
-          className="w-full p-3 mb-3 border border-gray-300 rounded-lg"
-        >
-          <option value="">Select Carrier</option>
-          <option value="AT&T">AT&T</option>
-          <option value="Verizon">Verizon</option>
-          <option value="T-Mobile">T-Mobile</option>
-          <option value="Sprint">Sprint</option>
-          <option value="Lyca">Lyca</option>
-          {/* Add more carrier options here */}
-        </select>
-
-        <button
-          onClick={handleAddEmergencyContact}
-          className="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600"
-        >
-          Add Emergency Contact
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Emergency Contacts</h1>
+        <button className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <Plus className="h-5 w-5 mr-2" />
+          Add Contact
         </button>
       </div>
 
-      {/* Display Emergency Contacts */}
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-4">Saved Emergency Contacts</h2>
-        <ul>
-          {emergencyContacts.map((contact, index) => (
-            <li
-              key={index}
-              className="p-2 bg-white rounded-lg shadow mb-2 flex justify-between items-center"
-            >
-              <span>
-                {contact.name} - {contact.phone_number}
-              </span>
-              <button
-                onClick={() =>
-                  deleteEmergencyContact(contact.name, contact.phone_number)
-                }
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">Your Emergency Contacts</h3>
+          <p className="mt-1 text-sm text-gray-500">People who will be notified in case of an emergency.</p>
+        </div>
+        <ul className="divide-y divide-gray-200">
+          {contacts.map((contact) => (
+            <li key={contact.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="text-lg font-medium text-gray-900">{contact.name}</h4>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <span className="mr-3">{contact.relationship}</span>
+                      <div className="flex items-center">
+                        <Phone className="h-4 w-4 mr-1 text-gray-400" />
+                        {contact.phone}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <button className="p-2 text-gray-400 hover:text-blue-500 rounded-full transition-colors">
+                    <Edit className="h-5 w-5" />
+                  </button>
+                  <button className="p-2 text-gray-400 hover:text-red-500 rounded-full transition-colors">
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
+        <div className="px-4 py-4 sm:px-6 bg-gray-50">
+          <p className="text-sm text-gray-500">
+            Emergency contacts will be notified when you trigger an emergency alert or when a high-priority safety alert
+            is issued for your location.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">Emergency Services</h3>
+          <p className="mt-1 text-sm text-gray-500">Important emergency numbers to remember.</p>
+        </div>
+        <div className="px-4 py-5 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border border-gray-200 rounded-lg p-4 flex items-center">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <Phone className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Emergency (Police, Fire, Medical)</p>
+                <p className="text-gray-500">911</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4 flex items-center">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <Phone className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Poison Control</p>
+                <p className="text-gray-500">1-800-222-1222</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4 flex items-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <Phone className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Non-Emergency Police</p>
+                <p className="text-gray-500">311 or local department</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4 flex items-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <Phone className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-gray-900 font-medium">Crisis Hotline</p>
+                <p className="text-gray-500">988</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default EmergencyPage;
