@@ -29,7 +29,7 @@ export default function AboutPage() {
       name: "Johnny Wang",
       role: "Model Developer & Data Specialist",
       bio: "Johnny leads our data collection and cleaning efforts, ensuring the accuracy and reliability of our safety metrics. He develops sophisticated models that transform raw data into actionable safety insights for NYC neighborhoods.",
-      image: "/placeholder.svg?height=300&width=300",
+      image: "/images/johnny-wang.png",
       socialLinks: {
         linkedin: "#",
         github: "#",
@@ -492,4 +492,3 @@ export default function AboutPage() {
     </div>
   )
 }
-
