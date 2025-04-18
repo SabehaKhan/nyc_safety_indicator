@@ -23,10 +23,23 @@ export default function DashboardLayout({
     { name: "Safety Alerts", href: "/dashboard/alerts", icon: Bell },
     { name: "Safety Reports", href: "/dashboard/reports", icon: BarChart3 },
     { name: "Safety Profile", href: "/dashboard/profile", icon: Shield },
-    { name: "Emergency Contacts", href: "/dashboard/emergency-contacts", icon: AlertTriangle },
+    {
+      name: "Emergency Contacts",
+      href: "/dashboard/emergency-contacts",
+      icon: AlertTriangle,
+    },
     { name: "Account Settings", href: "/dashboard/settings", icon: Settings },
-    { name: "Emergency Test", href: "/dashboard/emergency-test", icon: AlertTriangle },
-  ]
+    {
+      name: "Emergency Test",
+      href: "/dashboard/emergency-test",
+      icon: AlertTriangle,
+    },
+    {
+      name: "scrapper",
+      href: "/dashboard/scrapper",
+      icon: AlertTriangle,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-100">

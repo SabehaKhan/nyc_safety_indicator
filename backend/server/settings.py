@@ -60,14 +60,22 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "crime_news_cache",
+    }
+}
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'nycsafetyapp@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'nmeh opar etmw xbcc'  # You may need an app-specific password
+EMAIL_HOST_USER = 'nycsafetyapp@gmail.com'  
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
-
+NEWS_DATA_API = os.getenv("NEWS_DATA_API")
 
 GOOGLE_CLIENT_ID = os.getenv("CLIENT_ID")
 GOOGLE_SECRET_KEY = os.getenv("SECRET_KEY")

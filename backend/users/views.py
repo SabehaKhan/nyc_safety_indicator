@@ -22,6 +22,8 @@ from jwt.exceptions import DecodeError, ExpiredSignatureError, InvalidTokenError
 import requests
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
+from django.core.cache import cache
+
 
 
 SMS_GATEWAYS = {
@@ -177,7 +179,47 @@ class EmergencyAlert(APIView):
         }
         return Response(response_message, status=200 if success_count else 400)
 
-        
+class CrimeNews(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        force_refresh = request.GET.get("refresh") == "true"
+
+        if not force_refresh:
+            cached_news = cache.get("nyc_crime_news")
+            if cached_news:
+                return JsonResponse(cached_news, safe=False)
+
+        api_key = settings.NEWS_DATA_API
+
+        url = (
+        f"https://newsdata.io/api/1/news?apikey={api_key}"
+        f"&q=(sexual%20OR%20assault%20OR%20robbery%20OR%20shooting%20OR%20stabbing%20OR%20mugging%20OR%20burglary%20OR%20violence)%20AND%20(nyc%20OR%20brooklyn%20OR%20bronx%20OR%20queens%20OR%20staten%20island%20OR%20subway)"
+        f"&country=us&language=en&category=crime"
+    )
+
+
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+
+            articles = [
+                {
+                    "title": item["title"],
+                    "description": item.get("description", ""),
+                    "url": item["link"],
+                    "published_at": item.get("pubDate", ""),
+                    "publisher": item.get("source_id", ""),
+                    "category": item.get("category", "")
+                }
+                for item in data.get("results", [])
+            ]
+
+            articles = articles[:3]  # Limit to top 3
+            cache.set("nyc_crime_news", articles, timeout=60 * 60 * 6)
+            return JsonResponse(articles, safe=False)
+
+        return JsonResponse({"error": "Failed to fetch news"}, status=500)
+
 # Fetch Google's public keys
 def get_google_public_keys():
     response = requests.get(GOOGLE_CERTS_URL)
