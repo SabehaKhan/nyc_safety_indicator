@@ -8,7 +8,6 @@ import { useAuth } from "../context/auth-context"
 import { useRouter } from "next/navigation"
 import AxiosInstance from "../../components/AxiosInstance"
 import { GoogleLogin } from "@react-oauth/google"
-
 export default function Register() {
   const router = useRouter()
   const { login, isLoading } = useAuth()
@@ -18,7 +17,6 @@ export default function Register() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
-
   const handleGoogleLogin = async (response: { credential: any }) => {
     try {
       // Send the Google token along with the user's information to the backend
@@ -30,11 +28,9 @@ export default function Register() {
       const last_name_google_client = res.data.last_name
       const google_email = res.data.email
       const google_full_name = `${first_name_google_client} ${last_name_google_client}`
-
       // Assuming the backend sends user info, save the auth tokens
       localStorage.setItem("authToken", res.data.access)
       localStorage.setItem("refreshToken", res.data.refresh)
-
       // Redirect user to the home page
       login(google_email, "", google_full_name)
       router.push("/")
@@ -42,16 +38,9 @@ export default function Register() {
       console.error("Google login error:", error)
     }
   }
-
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     setError("") // Clear previous errors
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
-
     try {
       // Send registration request to the backend
       const response = await AxiosInstance.post("/register/", {
@@ -60,7 +49,6 @@ export default function Register() {
         email: email,
         password: password,
       })
-
       // If registration is successful, log the user in automatically
       if (response.data.token) {
         // Store the token in localStorage
@@ -77,9 +65,8 @@ export default function Register() {
       setError("Registration failed. Please try again.")
     }
   }
-
   return (
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_CLIENT_ID || ""}>
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_CLIENT_ID}>
       <div className="min-h-screen flex flex-col">
         <header className="container mx-auto px-4 py-4">
           <Link href="/" className="inline-flex items-center text-blue-500 hover:text-blue-700">
@@ -87,7 +74,6 @@ export default function Register() {
             Back to Home
           </Link>
         </header>
-
         <main className="flex-1 flex items-center justify-center py-12">
           <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">
             <div className="text-center">
@@ -103,13 +89,11 @@ export default function Register() {
               <h2 className="mt-6 text-3xl font-bold text-gray-900">Create your account</h2>
               <p className="mt-2 text-sm text-gray-600">Join GeoSafe Hub to access personalized safety information</p>
             </div>
-
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4">
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
-
             <div className="space-y-4">
               <button
                 type="button"
@@ -132,9 +116,7 @@ export default function Register() {
                 </svg>
                 Continue with Email
               </button>
-
               <GoogleLogin onSuccess={handleGoogleLogin} onError={(error: any) => console.log(error)} />
-
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
@@ -145,7 +127,6 @@ export default function Register() {
                 Continue with Apple
               </button>
             </div>
-
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -154,7 +135,6 @@ export default function Register() {
                 <span className="px-2 bg-white text-gray-500">Or register with email</span>
               </div>
             </div>
-
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -191,7 +171,6 @@ export default function Register() {
                     />
                   </div>
                 </div>
-
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Email address
@@ -208,7 +187,6 @@ export default function Register() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     Password
@@ -228,7 +206,6 @@ export default function Register() {
                     Must be at least 8 characters with 1 uppercase, 1 number, and 1 special character
                   </p>
                 </div>
-
                 <div>
                   <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
                     Confirm password
@@ -246,7 +223,6 @@ export default function Register() {
                   />
                 </div>
               </div>
-
               <div className="flex items-center">
                 <input
                   id="terms"
@@ -266,7 +242,6 @@ export default function Register() {
                   </Link>
                 </label>
               </div>
-
               <div>
                 <button
                   type="submit"
@@ -277,7 +252,6 @@ export default function Register() {
                 </button>
               </div>
             </form>
-
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
@@ -292,5 +266,3 @@ export default function Register() {
     </GoogleOAuthProvider>
   )
 }
-
-

@@ -24,4 +24,3 @@ AxiosInstance.interceptors.request.use(
 )
 
 export default AxiosInstance
-
