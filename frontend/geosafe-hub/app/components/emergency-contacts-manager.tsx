@@ -3,22 +3,26 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Phone, User, Trash2, Plus, AlertCircle } from "lucide-react"
+import { Phone, Trash2, Plus, ChevronDown } from "lucide-react"
 import AxiosInstance from "@/components/AxiosInstance"
 
 interface EmergencyContact {
   id: number
   name: string
   phone_number: string
+  carrier?: string
 }
 
 export default function EmergencyContactsManager() {
   const [contacts, setContacts] = useState<EmergencyContact[]>([])
-  const [newContact, setNewContact] = useState({ name: "", phone_number: "" })
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newContact, setNewContact] = useState({ name: "", phone_number: "", carrier: "" })
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [showCarrierDropdown, setShowCarrierDropdown] = useState(false)
   const [formError, setFormError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [token, setToken] = useState<string | null>(null)
+
+  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint"]
 
   // Load token on component mount
   useEffect(() => {
@@ -94,6 +98,12 @@ export default function EmergencyContactsManager() {
     setNewContact((prev) => ({ ...prev, [name]: value }))
   }
 
+  // Select carrier
+  const selectCarrier = (carrier: string) => {
+    setNewContact((prev) => ({ ...prev, carrier }))
+    setShowCarrierDropdown(false)
+  }
+
   // Add a new emergency contact
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,23 +127,26 @@ export default function EmergencyContactsManager() {
         }
       }
 
-      await AxiosInstance.post(
-        "/emergency/add/",
-        { name: newContact.name, phone_number: newContact.phone_number },
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
+      // Include carrier in the request if it's selected
+      const contactData = {
+        name: newContact.name,
+        phone_number: newContact.phone_number,
+        ...(newContact.carrier && { carrier: newContact.carrier }),
+      }
+
+      await AxiosInstance.post("/emergency/add/", contactData, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
         },
-      )
+      })
 
       // Refresh the contacts list
       await fetchEmergencyContacts()
 
-      // Reset form and close modal
-      setNewContact({ name: "", phone_number: "" })
-      setIsModalOpen(false)
+      // Reset form and close it
+      setNewContact({ name: "", phone_number: "", carrier: "" })
+      setShowAddForm(false)
     } catch (error) {
       console.error("Error adding emergency contact:", error)
       setFormError("Failed to add emergency contact. Please try again.")
@@ -182,156 +195,133 @@ export default function EmergencyContactsManager() {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Emergency Contacts</h2>
+    <div className="bg-gray-100 rounded-lg p-6 shadow-md max-w-md mx-auto">
+      <h2 className="text-2xl font-bold text-center mb-6">Emergency Contacts</h2>
+
+      {!showAddForm ? (
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+          onClick={() => setShowAddForm(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-4"
           disabled={isLoading}
         >
-          <Plus size={18} /> Add Contact
+          <Plus size={18} /> Add Emergency Contact
         </button>
-      </div>
+      ) : (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Add Emergency Contact</h3>
 
-      {formError && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-white flex items-center">
-          <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-          <p>{formError}</p>
-        </div>
-      )}
+          {formError && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md">{formError}</div>
+          )}
 
-      {/* Modal for adding contacts */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 shadow-xl w-full max-w-md">
-            <h3 className="text-xl font-bold text-white mb-4">Add Emergency Contact</h3>
+          <form onSubmit={handleAddContact}>
+            <div className="space-y-4">
+              <input
+                type="text"
+                name="name"
+                value={newContact.name}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Emergency Contact Name"
+              />
 
-            {formError && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-white flex items-center">
-                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                <p>{formError}</p>
-              </div>
-            )}
+              <input
+                type="tel"
+                name="phone_number"
+                value={newContact.phone_number}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Emergency Contact Phone"
+              />
 
-            <form onSubmit={handleAddContact}>
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-blue-100 mb-1">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-blue-300" />
-                    </div>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={newContact.name}
-                      onChange={handleInputChange}
-                      className="bg-white/10 border border-white/30 text-white rounded-md block w-full pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter full name"
-                    />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowCarrierDropdown(!showCarrierDropdown)}
+                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-md flex items-center justify-between"
+                >
+                  <span>{newContact.carrier || "Select Carrier"}</span>
+                  <ChevronDown size={16} />
+                </button>
+
+                {showCarrierDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-gray-600 border border-gray-700 rounded-md shadow-lg">
+                    {carriers.map((carrier) => (
+                      <div
+                        key={carrier}
+                        className={`px-4 py-2 cursor-pointer hover:bg-gray-500 ${
+                          carrier === newContact.carrier ? "bg-blue-500" : ""
+                        }`}
+                        onClick={() => selectCarrier(carrier)}
+                      >
+                        {carrier === newContact.carrier && <span className="mr-2">✓</span>}
+                        {carrier}
+                      </div>
+                    ))}
                   </div>
-                </div>
-
-                <div>
-                  <label htmlFor="phone_number" className="block text-sm font-medium text-blue-100 mb-1">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-blue-300" />
-                    </div>
-                    <input
-                      type="tel"
-                      id="phone_number"
-                      name="phone_number"
-                      value={newContact.phone_number}
-                      onChange={handleInputChange}
-                      className="bg-white/10 border border-white/30 text-white rounded-md block w-full pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex space-x-2">
                 <button
                   type="button"
                   onClick={() => {
-                    setIsModalOpen(false)
-                    setNewContact({ name: "", phone_number: "" })
+                    setShowAddForm(false)
+                    setNewContact({ name: "", phone_number: "", carrier: "" })
                     setFormError("")
                   }}
-                  className="px-4 py-2 border border-white/30 text-white rounded-md hover:bg-white/10 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100"
                   disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Saving..." : "Save Contact"}
+                  {isLoading ? "Saving..." : "Save"}
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Contacts List */}
-      <div className="space-y-4">
-        {isLoading && contacts.length === 0 ? (
-          <div className="text-center py-8 text-blue-100">
-            <p>Loading emergency contacts...</p>
-          </div>
-        ) : contacts.length === 0 ? (
-          <div className="text-center py-8 text-blue-100">
-            <p>No emergency contacts added yet.</p>
-            <p className="text-sm mt-2">Add contacts who should be notified in case of emergency.</p>
-          </div>
-        ) : (
-          contacts.map((contact) => (
-            <div
-              key={contact.id}
-              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 flex items-center justify-between"
-            >
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-500/30 rounded-full flex items-center justify-center mr-4">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">{contact.name}</h3>
-                  <div className="flex items-center text-blue-100">
-                    <Phone className="h-4 w-4 mr-1" />
-                    {contact.phone_number}
-                  </div>
+      <h3 className="text-lg font-semibold mt-6 mb-4">Saved Emergency Contacts</h3>
+
+      {isLoading && contacts.length === 0 ? (
+        <div className="text-center py-4 text-gray-500">
+          <p>Loading emergency contacts...</p>
+        </div>
+      ) : contacts.length === 0 ? (
+        <div className="text-center py-4 text-gray-500">
+          <p>No emergency contacts added yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {contacts.map((contact) => (
+            <div key={contact.id} className="bg-white rounded-lg p-3 flex items-center justify-between shadow-sm">
+              <div>
+                <h4 className="font-medium">{contact.name}</h4>
+                <div className="text-sm text-gray-600 flex items-center">
+                  <Phone className="h-3 w-3 mr-1" />
+                  {contact.phone_number}
+                  {contact.carrier && <span className="ml-1">({contact.carrier})</span>}
                 </div>
               </div>
               <button
                 onClick={() => handleDeleteContact(contact.name, contact.phone_number)}
-                className="p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+                className="p-1 text-red-500 hover:bg-red-50 rounded-full"
                 aria-label={`Delete ${contact.name}`}
                 disabled={isLoading}
               >
                 <Trash2 className="h-5 w-5" />
               </button>
             </div>
-          ))
-        )}
-      </div>
-
-      {contacts.length > 0 && (
-        <div className="mt-6 text-sm text-blue-100">
-          <p>These contacts will be notified in case of emergency.</p>
+          ))}
         </div>
       )}
     </div>
   )
 }
-

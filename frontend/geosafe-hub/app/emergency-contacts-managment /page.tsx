@@ -1,10 +1,16 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Plus } from "lucide-react"
 import EmergencyContactsManager from "../components/emergency-contacts-manager"
+import AddEmergencyContactForm from "../components/add-emergency-contact-form"
 import Footer from "../components/footer"
 
 export default function EmergencyContactsManagementPage() {
+  const [showAddForm, setShowAddForm] = useState(false)
+
   return (
     <div className="min-h-screen flex flex-col relative">
       {/* Background Image */}
@@ -46,11 +52,22 @@ export default function EmergencyContactsManagementPage() {
 
       <main className="flex-1 relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-6">Manage Emergency Contacts</h1>
-          <p className="text-xl text-blue-100 mb-8">
-            Add people who should be notified in case of an emergency. They'll receive alerts when you trigger an
-            emergency notification.
-          </p>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Manage Emergency Contacts</h1>
+              <p className="text-xl text-blue-100">
+                Add people who should be notified in case of an emergency. They'll receive alerts when you trigger an
+                emergency notification.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors flex items-center"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Add Contact
+            </button>
+          </div>
 
           <EmergencyContactsManager />
 
@@ -106,8 +123,16 @@ export default function EmergencyContactsManagementPage() {
         </div>
       </main>
 
+      {showAddForm && (
+        <AddEmergencyContactForm
+          onClose={() => setShowAddForm(false)}
+          onSuccess={() => {
+            // In a real app, you would refresh the contacts list here
+          }}
+        />
+      )}
+
       <Footer />
     </div>
   )
 }
-

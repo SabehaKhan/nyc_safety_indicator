@@ -8,6 +8,9 @@ import TestimonialMarquee from "./components/testimonial-marquee"
 // Import the HeaderMapButton component
 import HeaderMapButton from "./components/header-map-button"
 
+// Import the NewsHeadlines component at the top of the file
+import NewsHeadlines from "./components/news-headlines"
+
 // Dummy UserDashboardPreview component to resolve the error
 function UserDashboardPreview() {
   return <div>{/* Placeholder for User Dashboard Preview */}</div>
@@ -80,6 +83,11 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-300 mb-12">Try Search "Manhattan" or "Brooklyn"</p>
+            {/* And add the NewsHeadlines component after it: */}
+            <div className="max-w-md mx-auto mb-12">
+              <NewsHeadlines />
+            </div>
+            {/* The grid of locations should follow after this */}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               <div className="border border-white/20 rounded-lg p-6 flex flex-col items-center bg-black/30 backdrop-blur-sm">
@@ -171,8 +179,7 @@ export default function Home() {
                     </li>
                     <li className="flex">
                       <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
+                        xmlns="http://www.w3.org/24"
                         height="24"
                         viewBox="0 0 24 24"
                         fill="none"
@@ -357,4 +364,3 @@ export default function Home() {
     </div>
   )
 }
-
