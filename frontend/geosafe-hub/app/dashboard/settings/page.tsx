@@ -538,8 +538,4 @@ export default function Settings() {
     </div>
   );
 }
-<<<<<<< HEAD
-=======
 
-
->>>>>>> origin/dashboard

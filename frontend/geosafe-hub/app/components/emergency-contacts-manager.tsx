@@ -1,327 +1,202 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Phone, Trash2, Plus, ChevronDown } from "lucide-react"
-import AxiosInstance from "@/components/AxiosInstance"
-
-interface EmergencyContact {
-  id: number
-  name: string
-  phone_number: string
-  carrier?: string
-}
+import { useState } from "react"
+import { Phone, Trash2, Plus, ChevronDown, User, Check } from "lucide-react"
 
 export default function EmergencyContactsManager() {
-  const [contacts, setContacts] = useState<EmergencyContact[]>([])
-  const [newContact, setNewContact] = useState({ name: "", phone_number: "", carrier: "" })
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [contacts, setContacts] = useState([
+    { id: 1, name: "Jane Doe", relationship: "Family", phone: "+1 (555) 987-6543", carrier: "Verizon" },
+  ])
+
+  const [newContact, setNewContact] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    carrier: "",
+  })
+
   const [showCarrierDropdown, setShowCarrierDropdown] = useState(false)
-  const [formError, setFormError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [token, setToken] = useState<string | null>(null)
+  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint", "Other"]
 
-  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint"]
-
-  // Load token on component mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem("authToken")
-    setToken(storedToken)
-  }, [])
-
-  // Fetch contacts when token is available
-  useEffect(() => {
-    if (token) {
-      fetchEmergencyContacts()
-    }
-  }, [token])
-
-  // Function to refresh the access token
-  const refreshAccessToken = async () => {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken")
-      if (!refreshToken) {
-        console.error("No refresh token found.")
-        return null
-      }
-
-      const response = await AxiosInstance.post("/token/refresh/", {
-        refresh: refreshToken,
-      })
-
-      localStorage.setItem("authToken", response.data.access)
-      setToken(response.data.access)
-      return response.data.access
-    } catch (error) {
-      console.error("Token refresh failed:", error)
-      return null
-    }
-  }
-
-  // Fetch emergency contacts from API
-  const fetchEmergencyContacts = async () => {
-    setIsLoading(true)
-    try {
-      let authToken = token
-      if (!authToken) {
-        console.warn("No access token found. Attempting to refresh...")
-        authToken = await refreshAccessToken()
-        if (!authToken) {
-          console.error("Failed to refresh token. User needs to log in again.")
-          setIsLoading(false)
-          return
-        }
-      }
-
-      const response = await AxiosInstance.get("/emergency/fetch/", {
-        headers: { Authorization: `Bearer ${authToken}` },
-      })
-
-      setContacts(response.data)
-    } catch (error) {
-      const newToken = await refreshAccessToken()
-      if (newToken) {
-        fetchEmergencyContacts() // Retry fetching after refreshing
-      } else {
-        console.error(error)
-        setFormError("Failed to load emergency contacts. Please try again later.")
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Handle input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target
     setNewContact((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Select carrier
-  const selectCarrier = (carrier: string) => {
-    setNewContact((prev) => ({ ...prev, carrier }))
-    setShowCarrierDropdown(false)
-  }
-
-  // Add a new emergency contact
-  const handleAddContact = async (e: React.FormEvent) => {
+  const handleAddContact = (e) => {
     e.preventDefault()
-    setFormError("")
 
-    // Validate inputs
-    if (!newContact.name.trim() || !newContact.phone_number.trim()) {
-      setFormError("Please fill out both name and phone number")
+    // Simple validation
+    if (!newContact.firstName || !newContact.lastName || !newContact.phone) {
+      alert("Please fill out all required fields")
       return
     }
 
-    setIsLoading(true)
-    try {
-      let authToken = token
-      if (!authToken) {
-        authToken = await refreshAccessToken()
-        if (!authToken) {
-          setFormError("Session expired. Please log in again.")
-          setIsLoading(false)
-          return
-        }
-      }
-
-      // Include carrier in the request if it's selected
-      const contactData = {
-        name: newContact.name,
-        phone_number: newContact.phone_number,
-        ...(newContact.carrier && { carrier: newContact.carrier }),
-      }
-
-      await AxiosInstance.post("/emergency/add/", contactData, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      })
-
-      // Refresh the contacts list
-      await fetchEmergencyContacts()
-
-      // Reset form and close it
-      setNewContact({ name: "", phone_number: "", carrier: "" })
-      setShowAddForm(false)
-    } catch (error) {
-      console.error("Error adding emergency contact:", error)
-      setFormError("Failed to add emergency contact. Please try again.")
-    } finally {
-      setIsLoading(false)
+    // Create new contact
+    const newContactEntry = {
+      id: Date.now(), // Simple ID generation
+      name: `${newContact.firstName} ${newContact.lastName}`,
+      phone: newContact.phone,
+      carrier: newContact.carrier,
+      relationship: "Contact", // Default relationship
     }
+
+    // Add to contacts list
+    setContacts([...contacts, newContactEntry])
+
+    // Reset form
+    setNewContact({ firstName: "", lastName: "", phone: "", carrier: "" })
   }
 
-  // Delete an emergency contact
-  const handleDeleteContact = async (name: string, phone_number: string) => {
-    if (!confirm("Are you sure you want to delete this contact?")) {
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      let authToken = token
-      if (!authToken) {
-        authToken = await refreshAccessToken()
-        if (!authToken) {
-          setFormError("Session expired. Please log in again.")
-          setIsLoading(false)
-          return
-        }
-      }
-
-      await AxiosInstance.post(
-        "/emergency/delete/",
-        { name, phone_number },
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      )
-
-      // Refresh the contacts list
-      await fetchEmergencyContacts()
-    } catch (error) {
-      console.error("Error deleting emergency contact:", error)
-      setFormError("Failed to delete emergency contact. Please try again.")
-    } finally {
-      setIsLoading(false)
+  const handleDeleteContact = (id) => {
+    if (confirm("Are you sure you want to delete this contact?")) {
+      setContacts(contacts.filter((contact) => contact.id !== id))
     }
   }
 
   return (
-    <div className="bg-gray-100 rounded-lg p-6 shadow-md max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-center mb-6">Emergency Contacts</h2>
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-md max-w-3xl mx-auto">
+      <h2 className="text-2xl font-bold text-white mb-6">Emergency Contacts</h2>
 
-      {!showAddForm ? (
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-4"
-          disabled={isLoading}
-        >
-          <Plus size={18} /> Add Emergency Contact
-        </button>
-      ) : (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">Add Emergency Contact</h3>
+      {/* Add Contact Form */}
+      <div className="mb-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+        <h3 className="text-xl font-semibold text-white mb-4">Add New Emergency Contact</h3>
 
-          {formError && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md">{formError}</div>
-          )}
+        <form onSubmit={handleAddContact}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-white mb-1">
+                First Name
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-blue-300" />
+                </div>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={newContact.firstName}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-3 py-2 bg-white/10 border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-blue-200/70"
+                  placeholder="First Name"
+                  required
+                />
+              </div>
+            </div>
 
-          <form onSubmit={handleAddContact}>
-            <div className="space-y-4">
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-white mb-1">
+                Last Name
+              </label>
               <input
                 type="text"
-                name="name"
-                value={newContact.name}
+                id="lastName"
+                name="lastName"
+                value={newContact.lastName}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Emergency Contact Name"
+                className="w-full px-3 py-2 bg-white/10 border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-blue-200/70"
+                placeholder="Last Name"
+                required
               />
+            </div>
+          </div>
 
+          <div className="mb-4">
+            <label htmlFor="phone" className="block text-sm font-medium text-white mb-1">
+              Phone Number
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Phone className="h-5 w-5 text-blue-300" />
+              </div>
               <input
                 type="tel"
-                name="phone_number"
-                value={newContact.phone_number}
+                id="phone"
+                name="phone"
+                value={newContact.phone}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Emergency Contact Phone"
+                className="w-full pl-10 pr-3 py-2 bg-white/10 border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-blue-200/70"
+                placeholder="Phone Number"
+                required
               />
-
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowCarrierDropdown(!showCarrierDropdown)}
-                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-md flex items-center justify-between"
-                >
-                  <span>{newContact.carrier || "Select Carrier"}</span>
-                  <ChevronDown size={16} />
-                </button>
-
-                {showCarrierDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-gray-600 border border-gray-700 rounded-md shadow-lg">
-                    {carriers.map((carrier) => (
-                      <div
-                        key={carrier}
-                        className={`px-4 py-2 cursor-pointer hover:bg-gray-500 ${
-                          carrier === newContact.carrier ? "bg-blue-500" : ""
-                        }`}
-                        onClick={() => selectCarrier(carrier)}
-                      >
-                        {carrier === newContact.carrier && <span className="mr-2">✓</span>}
-                        {carrier}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddForm(false)
-                    setNewContact({ name: "", phone_number: "", carrier: "" })
-                    setFormError("")
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100"
-                  disabled={isLoading}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Saving..." : "Save"}
-                </button>
-              </div>
             </div>
-          </form>
-        </div>
-      )}
+          </div>
 
-      <h3 className="text-lg font-semibold mt-6 mb-4">Saved Emergency Contacts</h3>
-
-      {isLoading && contacts.length === 0 ? (
-        <div className="text-center py-4 text-gray-500">
-          <p>Loading emergency contacts...</p>
-        </div>
-      ) : contacts.length === 0 ? (
-        <div className="text-center py-4 text-gray-500">
-          <p>No emergency contacts added yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {contacts.map((contact) => (
-            <div key={contact.id} className="bg-white rounded-lg p-3 flex items-center justify-between shadow-sm">
-              <div>
-                <h4 className="font-medium">{contact.name}</h4>
-                <div className="text-sm text-gray-600 flex items-center">
-                  <Phone className="h-3 w-3 mr-1" />
-                  {contact.phone_number}
-                  {contact.carrier && <span className="ml-1">({contact.carrier})</span>}
-                </div>
-              </div>
+          <div className="mb-6">
+            <label htmlFor="carrier" className="block text-sm font-medium text-white mb-1">
+              Carrier (Optional)
+            </label>
+            <div className="relative">
               <button
-                onClick={() => handleDeleteContact(contact.name, contact.phone_number)}
-                className="p-1 text-red-500 hover:bg-red-50 rounded-full"
-                aria-label={`Delete ${contact.name}`}
-                disabled={isLoading}
+                type="button"
+                onClick={() => setShowCarrierDropdown(!showCarrierDropdown)}
+                className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-md text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <Trash2 className="h-5 w-5" />
+                <span>{newContact.carrier || "Select Carrier"}</span>
+                <ChevronDown size={16} />
               </button>
+
+              {showCarrierDropdown && (
+                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+                  {carriers.map((carrier) => (
+                    <div
+                      key={carrier}
+                      className={`px-4 py-2 cursor-pointer hover:bg-gray-700 ${
+                        carrier === newContact.carrier ? "bg-blue-900" : ""
+                      }`}
+                      onClick={() => {
+                        setNewContact((prev) => ({ ...prev, carrier }))
+                        setShowCarrierDropdown(false)
+                      }}
+                    >
+                      <div className="flex items-center">
+                        {carrier === newContact.carrier && <Check className="h-4 w-4 text-blue-400 mr-2" />}
+                        <span className="text-white">{carrier}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add Emergency Contact
+          </button>
+        </form>
+      </div>
+
+      <h3 className="text-xl font-semibold text-white mb-4">Your Emergency Contacts</h3>
+
+      <div className="space-y-3">
+        {contacts.map((contact) => (
+          <div
+            key={contact.id}
+            className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center justify-between"
+          >
+            <div>
+              <h4 className="font-medium text-white">{contact.name}</h4>
+              <div className="text-sm text-blue-200 flex items-center">
+                <Phone className="h-3 w-3 mr-1" />
+                {contact.phone}
+                {contact.carrier && <span className="ml-1">({contact.carrier})</span>}
+              </div>
+            </div>
+            <button
+              onClick={() => handleDeleteContact(contact.id)}
+              className="p-2 text-red-400 hover:bg-red-500/20 rounded-full transition-colors"
+              aria-label={`Delete ${contact.name}`}
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
