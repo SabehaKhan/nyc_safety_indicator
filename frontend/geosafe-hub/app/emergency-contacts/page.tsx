@@ -1,64 +1,130 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowLeft, Phone, ChevronDown, Check, Edit, Trash2, User } from "lucide-react"
-import Footer from "../components/footer"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowLeft,
+  Phone,
+  ChevronDown,
+  Check,
+  Edit,
+  Trash2,
+  User,
+} from "lucide-react";
+import Footer from "../components/footer";
+import AxiosInstance from "@/components/AxiosInstance";
 
 export default function EmergencyContactsPage() {
-  const [contacts, setContacts] = useState([
-    { id: 1, name: "Jane Doe", phone: "+1 (555) 987-6543", carrier: "Verizon" },
-    { id: 2, name: "Michael Doe", phone: "+1 (555) 456-7890", carrier: "AT&T" },
-  ])
-
+  const [contacts, setContacts] = useState([]);
   const [newContact, setNewContact] = useState({
     name: "",
-    phone: "",
+    phone_number: "",
     carrier: "",
-  })
+  });
+  const [showCarrierDropdown, setShowCarrierDropdown] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
-  const [showCarrierDropdown, setShowCarrierDropdown] = useState(false)
-  const [editingContact, setEditingContact] = useState(null)
+  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint", "Other"];
 
-  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint", "Other"]
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    setToken(storedToken);
+  }, []);
+
+  useEffect(() => {
+    if (token) fetchEmergencyContacts();
+  }, [token]);
+
+  const refreshAccessToken = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) return null;
+      const response = await AxiosInstance.post("/token/refresh/", {
+        refresh: refreshToken,
+      });
+      localStorage.setItem("authToken", response.data.access);
+      setToken(response.data.access);
+      return response.data.access;
+    } catch (err) {
+      console.error("Token refresh failed:", err);
+      return null;
+    }
+  };
+
+  const fetchEmergencyContacts = async () => {
+    try {
+      let authToken = token || (await refreshAccessToken());
+      if (!authToken) return;
+      const res = await AxiosInstance.get("/emergency/fetch/", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setContacts(res.data);
+    } catch (err) {
+      const newToken = await refreshAccessToken();
+      if (newToken) fetchEmergencyContacts();
+    }
+  };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setNewContact((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setNewContact((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleAddContact = (e) => {
-    e.preventDefault()
-
-    // Simple validation
-    if (!newContact.name || !newContact.phone) {
-      alert("Please fill out all required fields")
-      return
+  const handleAddContact = async (e) => {
+    e.preventDefault();
+    const { name, phone_number, carrier } = newContact;
+    if (!name || !phone_number) {
+      alert("Please fill out all required fields");
+      return;
     }
+    try {
+      let authToken = token || (await refreshAccessToken());
+      if (!authToken) return;
 
-    // Create new contact
-    const newContactEntry = {
-      id: Date.now(),
-      name: newContact.name,
-      phone: newContact.phone,
-      carrier: newContact.carrier || "Not specified",
+      await AxiosInstance.post(
+        "/emergency/add/",
+        {
+          name,
+          phone_number,
+          carrier: carrier || "Not specified",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      setNewContact({ name: "", phone_number: "", carrier: "" });
+      fetchEmergencyContacts()
+    } catch (err) {
+      console.error("Failed to add contact", err);
     }
+  };
 
-    // Add to contacts list
-    setContacts([...contacts, newContactEntry])
-
-    // Reset form
-    setNewContact({ name: "", phone: "", carrier: "" })
-  }
-
-  const handleDeleteContact = (id) => {
-    setContacts(contacts.filter((contact) => contact.id !== id))
-  }
+  const handleDeleteContact = async (name: string, phone_number: string) => {
+    try {
+      let authToken = token || (await refreshAccessToken());
+      if (!authToken) return;
+      await AxiosInstance.post(
+        "/emergency/delete/",
+        { name, phone_number },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      fetchEmergencyContacts();
+      
+    } catch (err) {
+      console.error("Failed to delete contact", err);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      {/* Background Image */}
       <div className="fixed inset-0 z-0">
         <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/579793-aerial_view-vertical-New_York_City.jpg-gdpMVsd9XvCHK8jhCjtQCtScS50yT8.jpeg"
@@ -68,7 +134,6 @@ export default function EmergencyContactsPage() {
           priority
           quality={100}
         />
-        {/* Overlay to ensure text readability */}
         <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px]" />
       </div>
 
@@ -97,43 +162,43 @@ export default function EmergencyContactsPage() {
 
       <main className="flex-1 relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          {/* Emergency Contacts Form */}
           <div className="bg-white rounded-xl p-8 shadow-xl mb-8">
-            <h1 className="text-2xl font-bold text-center mb-6">Emergency Contacts</h1>
+            <h1 className="text-2xl font-bold text-center mb-6">
+              Emergency Contacts
+            </h1>
 
-            <h2 className="text-xl font-semibold mb-4">Add Emergency Contact</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Add Emergency Contact
+            </h2>
             <form onSubmit={handleAddContact} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  name="name"
-                  value={newContact.name}
-                  onChange={handleInputChange}
-                  placeholder="Emergency Contact Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={newContact.phone}
-                  onChange={handleInputChange}
-                  placeholder="Emergency Contact Phone"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
+              <input
+                type="text"
+                name="name"
+                value={newContact.name}
+                onChange={handleInputChange}
+                placeholder="Emergency Contact Name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                required
+              />
+              <input
+                type="tel"
+                name="phone_number"
+                value={newContact.phone_number}
+                onChange={handleInputChange}
+                placeholder="Emergency Contact Phone"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                required
+              />
 
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setShowCarrierDropdown(!showCarrierDropdown)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-left flex items-center justify-between"
                 >
-                  <span className="text-gray-500">{newContact.carrier || "Select Carrier"}</span>
+                  <span className="text-gray-500">
+                    {newContact.carrier || "Select Carrier"}
+                  </span>
                   <ChevronDown className="h-5 w-5 text-gray-400" />
                 </button>
 
@@ -144,11 +209,13 @@ export default function EmergencyContactsPage() {
                         key={carrier}
                         className="px-4 py-2 hover:bg-gray-600 cursor-pointer flex items-center text-white"
                         onClick={() => {
-                          setNewContact((prev) => ({ ...prev, carrier }))
-                          setShowCarrierDropdown(false)
+                          setNewContact((prev) => ({ ...prev, carrier }));
+                          setShowCarrierDropdown(false);
                         }}
                       >
-                        {carrier === newContact.carrier && <Check className="h-4 w-4 text-blue-400 mr-2" />}
+                        {carrier === newContact.carrier && (
+                          <Check className="h-4 w-4 text-blue-400 mr-2" />
+                        )}
                         <span>{carrier}</span>
                       </div>
                     ))}
@@ -158,13 +225,15 @@ export default function EmergencyContactsPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
               >
                 Add Emergency Contact
               </button>
             </form>
 
-            <h2 className="text-xl font-semibold mt-8 mb-4">Saved Emergency Contacts</h2>
+            <h2 className="text-xl font-semibold mt-8 mb-4">
+              Saved Emergency Contacts
+            </h2>
             {contacts.length > 0 ? (
               <div className="space-y-3">
                 {contacts.map((contact) => (
@@ -180,28 +249,22 @@ export default function EmergencyContactsPage() {
                         <p className="font-medium">{contact.name}</p>
                         <div className="flex items-center text-sm text-gray-500">
                           <Phone className="h-3 w-3 mr-1" />
-                          <span>{contact.phone}</span>
-                          {contact.carrier && <span className="ml-2">({contact.carrier})</span>}
+                          <span>{contact.phone_number}</span>
+                          {contact.carrier && (
+                            <span className="ml-2">({contact.carrier})</span>
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="flex space-x-2">
                       <button
-                        className="text-gray-400 hover:text-blue-500"
-                        onClick={() => {
-                          setNewContact({
-                            name: contact.name,
-                            phone: contact.phone,
-                            carrier: contact.carrier,
-                          })
-                          handleDeleteContact(contact.id)
-                        }}
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteContact(contact.id)}
                         className="text-gray-400 hover:text-red-500"
+                        onClick={() =>
+                          handleDeleteContact(
+                            contact.name,
+                            contact.phone_number
+                          )
+                        }
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -210,11 +273,12 @@ export default function EmergencyContactsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">No emergency contacts saved yet.</p>
+              <p className="text-gray-500 text-center py-4">
+                No emergency contacts saved yet.
+              </p>
             )}
           </div>
 
-          {/* Emergency Services */}
           <div className="bg-white rounded-xl p-6 shadow-xl">
             <h2 className="text-xl font-semibold mb-4">Emergency Services</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -223,7 +287,9 @@ export default function EmergencyContactsPage() {
                   <Phone className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-gray-900 font-medium">Emergency (Police, Fire, Medical)</p>
+                  <p className="text-gray-900 font-medium">
+                    Emergency (Police, Fire, Medical)
+                  </p>
                   <p className="text-2xl font-bold text-red-600">911</p>
                 </div>
               </div>
@@ -233,7 +299,9 @@ export default function EmergencyContactsPage() {
                 </div>
                 <div>
                   <p className="text-gray-900 font-medium">Poison Control</p>
-                  <p className="text-2xl font-bold text-red-600">1-800-222-1222</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    1-800-222-1222
+                  </p>
                 </div>
               </div>
             </div>
@@ -243,5 +311,5 @@ export default function EmergencyContactsPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

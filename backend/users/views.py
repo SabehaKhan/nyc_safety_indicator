@@ -31,10 +31,6 @@ SMS_GATEWAYS = {
     'verizon': '@vtext.com',
     'tmobile': '@tmomail.net',
     'sprint': '@messaging.sprintpcs.com',
-    'metropcs': '@mymetropcs.com',
-    'cricket': '@sms.cricketwireless.net',
-    'boost': '@myboostmobile.com',
-    'lyca': '@mms.us.lycamobile.com'
 }
 
 User = get_user_model()
@@ -195,18 +191,16 @@ class CrimeNews(APIView):
         url = (
         f"https://newsdata.io/api/1/news?"
         f"apikey={api_key}"
-        "&q=ny OR nyc"
+        "&q=ny OR nyc OR bronx OR brooklyn OR manhattan"
         "&country=us"
         "&language=en"
         "&category=crime"
     )
 
-
-
-
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
+            
 
             articles = [
                 {

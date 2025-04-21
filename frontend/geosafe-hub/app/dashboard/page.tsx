@@ -1,40 +1,85 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { MapPin, Shield, AlertTriangle, TrendingUp, Bell, ArrowRight, Search, Phone } from "lucide-react"
+import Link from "next/link";
+import {
+  MapPin,
+  Shield,
+  AlertTriangle,
+  TrendingUp,
+  Bell,
+  ArrowRight,
+  Search,
+  Phone,
+} from "lucide-react";
 
 export default function Dashboard() {
   // Mock data for the dashboard
-  const safetyScore = 78
+  const safetyScore = 78;
   const savedLocations = [
-    { id: 1, name: "Home", address: "123 Main St, Brooklyn, NY 11201", score: 82 },
-    { id: 2, name: "Work", address: "456 Park Ave, Manhattan, NY 10022", score: 75 },
-    { id: 3, name: "Gym", address: "789 Fitness Blvd, Queens, NY 11106", score: 68 },
-  ]
+    {
+      id: 1,
+      name: "Home",
+      address: "123 Main St, Brooklyn, NY 11201",
+      score: 82,
+    },
+    {
+      id: 2,
+      name: "Work",
+      address: "456 Park Ave, Manhattan, NY 10022",
+      score: 75,
+    },
+    {
+      id: 3,
+      name: "Gym",
+      address: "789 Fitness Blvd, Queens, NY 11106",
+      score: 68,
+    },
+  ];
 
   const recentAlerts = [
-    { id: 1, type: "Crime", location: "Near Work", time: "2 hours ago", message: "Reported theft in the area" },
-    { id: 2, type: "Traffic", location: "Route to Work", time: "5 hours ago", message: "Major accident on I-95" },
-    { id: 3, type: "Weather", location: "Brooklyn", time: "1 day ago", message: "Flash flood warning" },
-  ]
+    {
+      id: 1,
+      type: "Crime",
+      location: "Near Work",
+      time: "2 hours ago",
+      message: "Reported theft in the area",
+    },
+    {
+      id: 2,
+      type: "Traffic",
+      location: "Route to Work",
+      time: "5 hours ago",
+      message: "Major accident on I-95",
+    },
+    {
+      id: 3,
+      type: "Weather",
+      location: "Brooklyn",
+      time: "1 day ago",
+      message: "Flash flood warning",
+    },
+  ];
 
   const safetyTips = [
     {
       id: 1,
       title: "Stay aware of your surroundings",
-      description: "Always be mindful of what's happening around you, especially in unfamiliar areas.",
+      description:
+        "Always be mindful of what's happening around you, especially in unfamiliar areas.",
     },
     {
       id: 2,
       title: "Keep emergency contacts updated",
-      description: "Make sure your emergency contacts are current and easily accessible.",
+      description:
+        "Make sure your emergency contacts are current and easily accessible.",
     },
     {
       id: 3,
       title: "Plan your route ahead of time",
-      description: "Research and plan your travel routes, especially when visiting new locations.",
+      description:
+        "Research and plan your travel routes, especially when visiting new locations.",
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -57,14 +102,20 @@ export default function Dashboard() {
         <div className="px-4 py-5 sm:p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-medium text-gray-900">Your Overall Safety Score</h2>
-              <p className="mt-1 text-sm text-gray-500">Based on your saved locations and preferences</p>
+              <h2 className="text-lg font-medium text-gray-900">
+                Your Overall Safety Score
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Based on your saved locations and preferences
+              </p>
             </div>
             <div className="mt-4 md:mt-0">
               <div className="flex items-center">
                 <Shield className="h-12 w-12 text-blue-500" />
                 <div className="ml-4">
-                  <div className="text-4xl font-bold text-gray-900">{safetyScore}</div>
+                  <div className="text-4xl font-bold text-gray-900">
+                    {safetyScore}
+                  </div>
                   <div className="text-sm text-gray-500">out of 100</div>
                 </div>
               </div>
@@ -98,9 +149,13 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Saved Locations</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Saved Locations
+                  </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">3</div>
+                    <div className="text-2xl font-semibold text-gray-900">
+                      3
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -108,7 +163,10 @@ export default function Dashboard() {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link href="/dashboard/saved-locations" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link
+                href="/dashboard/saved-locations"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 View all<span className="sr-only"> saved locations</span>
               </Link>
             </div>
@@ -123,9 +181,13 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Active Alerts</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Active Alerts
+                  </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">2</div>
+                    <div className="text-2xl font-semibold text-gray-900">
+                      2
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -133,7 +195,10 @@ export default function Dashboard() {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link href="/dashboard/alerts" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link
+                href="/dashboard/alerts"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 View all<span className="sr-only"> alerts</span>
               </Link>
             </div>
@@ -148,10 +213,16 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Safety Trend</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Safety Trend
+                  </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">+5%</div>
-                    <span className="ml-2 text-sm font-medium text-green-600">Improving</span>
+                    <div className="text-2xl font-semibold text-gray-900">
+                      +5%
+                    </div>
+                    <span className="ml-2 text-sm font-medium text-green-600">
+                      Improving
+                    </span>
                   </dd>
                 </dl>
               </div>
@@ -159,7 +230,10 @@ export default function Dashboard() {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link href="/dashboard/reports" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link
+                href="/dashboard/reports"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 View reports<span className="sr-only"> on safety trends</span>
               </Link>
             </div>
@@ -174,9 +248,13 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Notification Settings</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Notification Settings
+                  </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-lg font-semibold text-gray-900">Customized</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      Customized
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -184,8 +262,12 @@ export default function Dashboard() {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link href="/dashboard/settings" className="font-medium text-blue-600 hover:text-blue-500">
-                Update settings<span className="sr-only"> for notifications</span>
+              <Link
+                href="/dashboard/settings"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Update settings
+                <span className="sr-only"> for notifications</span>
               </Link>
             </div>
           </div>
@@ -199,9 +281,13 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Emergency Contacts</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Emergency Contacts
+                  </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">2</div>
+                    <div className="text-2xl font-semibold text-gray-900">
+                      2
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -209,8 +295,12 @@ export default function Dashboard() {
           </div>
           <div className="bg-gray-50 px-4 py-4 sm:px-6">
             <div className="text-sm">
-              <Link href="/emergency-contacts-management" className="font-medium text-blue-600 hover:text-blue-500">
-                Manage contacts<span className="sr-only"> for emergency situations</span>
+              <Link
+                href="/emergency-contacts-management"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Manage contacts
+                <span className="sr-only"> for emergency situations</span>
               </Link>
             </div>
           </div>
@@ -223,29 +313,43 @@ export default function Dashboard() {
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Saved Locations</h3>
-              <Link href="/dashboard/saved-locations" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
+                Saved Locations
+              </h3>
+              <Link
+                href="/dashboard/saved-locations"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
                 View all
               </Link>
             </div>
           </div>
           <ul className="divide-y divide-gray-200">
             {savedLocations.map((location) => (
-              <li key={location.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+              <li
+                key={location.id}
+                className="px-4 py-4 sm:px-6 hover:bg-gray-50"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <MapPin className="h-6 w-6 text-gray-400" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">{location.name}</p>
-                      <p className="text-sm text-gray-500">{location.address}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {location.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {location.address}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <div className="flex items-center bg-blue-100 px-2.5 py-0.5 rounded-full">
                       <Shield className="h-4 w-4 text-blue-500 mr-1" />
-                      <span className="text-sm font-medium text-blue-800">{location.score}</span>
+                      <span className="text-sm font-medium text-blue-800">
+                        {location.score}
+                      </span>
                     </div>
                     <Link
                       href={`/dashboard/saved-locations/${location.id}`}
@@ -269,8 +373,13 @@ export default function Dashboard() {
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Recent Alerts</h3>
-              <Link href="/dashboard/alerts" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
+                Recent Alerts
+              </h3>
+              <Link
+                href="/dashboard/alerts"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
                 View all
               </Link>
             </div>
@@ -292,7 +401,10 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center">
                     <span className="text-xs text-gray-500">{alert.time}</span>
-                    <Link href={`/dashboard/alerts/${alert.id}`} className="ml-4 text-gray-400 hover:text-gray-500">
+                    <Link
+                      href={`/dashboard/alerts/${alert.id}`}
+                      className="ml-4 text-gray-400 hover:text-gray-500"
+                    >
                       <ArrowRight className="h-5 w-5" />
                     </Link>
                   </div>
@@ -314,13 +426,20 @@ export default function Dashboard() {
       {/* Safety Tips */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Safety Tips</h3>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Safety Tips
+          </h3>
         </div>
         <div className="px-4 py-5 sm:p-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {safetyTips.map((tip) => (
-              <div key={tip.id} className="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors">
-                <h4 className="text-lg font-medium text-gray-900 mb-2">{tip.title}</h4>
+              <div
+                key={tip.id}
+                className="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors"
+              >
+                <h4 className="text-lg font-medium text-gray-900 mb-2">
+                  {tip.title}
+                </h4>
                 <p className="text-sm text-gray-500">{tip.description}</p>
               </div>
             ))}
@@ -328,5 +447,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

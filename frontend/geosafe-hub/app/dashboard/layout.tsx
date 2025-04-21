@@ -1,37 +1,55 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Home, User, LogOut, Menu, X, Star, Phone, BarChart3 } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Home,
+  User,
+  LogOut,
+  Menu,
+  X,
+  Star,
+  Phone,
+  BarChart3,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const pathname = usePathname()
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
 
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: Home },
     { name: "Saved Locations", href: "/dashboard/saved-locations", icon: Star },
-    { name: "Emergency Contacts", href: "/dashboard/emergency-contacts", icon: Phone },
+    {
+      name: "Emergency Contacts",
+      href: "/dashboard/emergency-contacts",
+      icon: Phone,
+    },
     { name: "Safety Reports", href: "/dashboard/reports", icon: BarChart3 },
     { name: "Profile & Settings", href: "/dashboard/profile", icon: User },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Mobile sidebar */}
       <div className="lg:hidden">
-        <div className="fixed inset-0 bg-gray-900/80 z-40" style={{ display: sidebarOpen ? "block" : "none" }} />
+        <div
+          className="fixed inset-0 bg-gray-900/80 z-40"
+          style={{ display: sidebarOpen ? "block" : "none" }}
+        />
 
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white transition-transform duration-300 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white transition-transform duration-300 transform ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
         >
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
             <Link href="/dashboard" className="flex items-center gap-2">
@@ -44,7 +62,10 @@ export default function DashboardLayout({
               />
               <span className="text-xl font-bold">GeoSafe Hub</span>
             </Link>
-            <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
               <X size={24} />
             </button>
           </div>
@@ -55,10 +76,16 @@ export default function DashboardLayout({
                   key={item.name}
                   href={item.href}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    pathname === item.href ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+                    pathname === item.href
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  <item.icon className={`mr-3 h-5 w-5 ${pathname === item.href ? "text-blue-600" : "text-gray-400"}`} />
+                  <item.icon
+                    className={`mr-3 h-5 w-5 ${
+                      pathname === item.href ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
                   {item.name}
                 </Link>
               ))}
@@ -98,10 +125,16 @@ export default function DashboardLayout({
                   key={item.name}
                   href={item.href}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    pathname === item.href ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+                    pathname === item.href
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  <item.icon className={`mr-3 h-5 w-5 ${pathname === item.href ? "text-blue-600" : "text-gray-400"}`} />
+                  <item.icon
+                    className={`mr-3 h-5 w-5 ${
+                      pathname === item.href ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
                   {item.name}
                 </Link>
               ))}
@@ -153,5 +186,5 @@ export default function DashboardLayout({
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
-  )
+  );
 }

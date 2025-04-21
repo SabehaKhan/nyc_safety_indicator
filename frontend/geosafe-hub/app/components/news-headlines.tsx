@@ -1,79 +1,45 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { AlertCircle, ExternalLink, RefreshCw } from "lucide-react"
+import AxiosInstance from "@/components/AxiosInstance";
+import { useState, useEffect } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
-interface NewsItem {
-  id: number
-  title: string
-  source: string
-  url: string
-  date: string
-}
+type Article = {
+  title: string;
+  description: string;
+  url: string;
+  published_at: string;
+};
 
 export default function NewsHeadlines() {
-  const [headlines, setHeadlines] = useState<NewsItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [news, setNews] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - in a real app, this would come from an API
-  const mockHeadlines: NewsItem[] = [
-    {
-      id: 1,
-      title: "NYPD Reports 12% Decrease in Crime Rates Across Manhattan",
-      source: "NYC News",
-      url: "#",
-      date: "2 hours ago",
-    },
-    {
-      id: 2,
-      title: "New Safety Measures Implemented in Brooklyn Neighborhoods",
-      source: "Safety Today",
-      url: "#",
-      date: "5 hours ago",
-    },
-    {
-      id: 3,
-      title: "City Council Approves Funding for Additional Street Lighting in Queens",
-      source: "City Updates",
-      url: "#",
-      date: "Yesterday",
-    },
-  ]
-
-  // Simulate fetching headlines
-  useEffect(() => {
-    const fetchHeadlines = async () => {
-      setLoading(true)
-      try {
-        // In a real app, this would be an API call
-        // const response = await fetch('/api/news-headlines')
-        // const data = await response.json()
-
-        // Using mock data for demonstration
-        setTimeout(() => {
-          setHeadlines(mockHeadlines)
-          setLoading(false)
-        }, 1000)
-      } catch (err) {
-        setError("Failed to load safety news. Please try again.")
-        setLoading(false)
-      }
+  const fetchNews = async (refresh = false) => {
+    setLoading(true);
+    try {
+      const res = await AxiosInstance.get(`/crime-news/`, {
+        params: {
+          refresh: refresh ? "true" : "false",
+        },
+      });
+      setNews(res.data);
+      setLoading(false);
+    } catch (e) {
+      setError("Failed to load news. Please try again.");
+      setLoading(false);
     }
-
-    fetchHeadlines()
-  }, [])
+  };
 
   const refreshHeadlines = () => {
-    setLoading(true)
-    setError(null)
+    fetchNews(true);
+  };
 
-    // Simulate refreshing data
-    setTimeout(() => {
-      setHeadlines(mockHeadlines)
-      setLoading(false)
-    }, 1000)
-  }
+  // Fetch news on load
+  useEffect(() => {
+    fetchNews();
+  }, []);
 
   return (
     <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-xl p-4 shadow-lg max-w-md mx-auto">
@@ -93,7 +59,9 @@ export default function NewsHeadlines() {
       </div>
 
       {error ? (
-        <div className="bg-red-500/20 text-red-200 p-3 rounded-lg text-sm">{error}</div>
+        <div className="bg-red-500/20 text-red-200 p-3 rounded-lg text-sm">
+          {error}
+        </div>
       ) : loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -103,26 +71,28 @@ export default function NewsHeadlines() {
             </div>
           ))}
         </div>
-      ) : (
-        <div className="space-y-3">
-          {headlines.map((headline) => (
-            <a
-              key={headline.id}
-              href={headline.url}
-              className="block bg-white/10 hover:bg-white/20 transition-colors p-3 rounded-lg"
-            >
-              <div className="flex justify-between items-start">
-                <h4 className="text-white font-medium text-sm mb-1">{headline.title}</h4>
-                <ExternalLink className="h-3 w-3 text-blue-300 flex-shrink-0 mt-1 ml-2" />
-              </div>
-              <div className="flex justify-between text-xs text-blue-200">
-                <span>{headline.source}</span>
-                <span>{headline.date}</span>
-              </div>
-            </a>
+      ) : news.length ? (
+        <ul className="space-y-3 list-disc pl-5">
+          {news.map((article, idx) => (
+            <li key={idx} className="space-y-2">
+              <a
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-base font-semibold text-blue-500 hover:text-blue-700"
+              >
+                {article.title}
+              </a>
+              <p className="text-xs text-white/70">
+                {new Date(article.published_at).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-white/90">{article.description}</p>
+            </li>
           ))}
-        </div>
+        </ul>
+      ) : (
+        <p>No news available.</p>
       )}
     </div>
-  )
+  );
 }

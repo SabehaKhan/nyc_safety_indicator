@@ -1,41 +1,54 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowLeft, Phone, ChevronDown, Check, Edit, Trash2, User } from "lucide-react"
-import Footer from "../components/footer"
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowLeft,
+  Phone,
+  ChevronDown,
+  Check,
+  Edit,
+  Trash2,
+  User,
+} from "lucide-react";
+import Footer from "../components/footer";
 
 export default function EmergencyContactsManagementPage() {
   const [contacts, setContacts] = useState([
     { id: 1, name: "Jane Doe", phone: "+1 (555) 987-6543", carrier: "Verizon" },
     { id: 2, name: "Michael Doe", phone: "+1 (555) 456-7890", carrier: "AT&T" },
-    { id: 3, name: "Sarah Johnson", phone: "+1 (555) 234-5678", carrier: "T-Mobile" },
-  ])
+    {
+      id: 3,
+      name: "Sarah Johnson",
+      phone: "+1 (555) 234-5678",
+      carrier: "T-Mobile",
+    },
+  ]);
 
   const [newContact, setNewContact] = useState({
     name: "",
     phone: "",
     carrier: "",
-  })
+  });
 
-  const [showCarrierDropdown, setShowCarrierDropdown] = useState(false)
-  const [editingContact, setEditingContact] = useState(null)
+  const [showCarrierDropdown, setShowCarrierDropdown] = useState(false);
+  const [editingContact, setEditingContact] = useState(null);
 
-  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint", "Other"]
+  const carriers = ["AT&T", "Verizon", "T-Mobile", "Sprint", "Other"];
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setNewContact((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setNewContact((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAddContact = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Simple validation
     if (!newContact.name || !newContact.phone) {
-      alert("Please fill out all required fields")
-      return
+      alert("Please fill out all required fields");
+      return;
     }
 
     // Create new contact
@@ -44,18 +57,18 @@ export default function EmergencyContactsManagementPage() {
       name: newContact.name,
       phone: newContact.phone,
       carrier: newContact.carrier || "Not specified",
-    }
+    };
 
     // Add to contacts list
-    setContacts([...contacts, newContactEntry])
+    setContacts([...contacts, newContactEntry]);
 
     // Reset form
-    setNewContact({ name: "", phone: "", carrier: "" })
-  }
+    setNewContact({ name: "", phone: "", carrier: "" });
+  };
 
   const handleDeleteContact = (id) => {
-    setContacts(contacts.filter((contact) => contact.id !== id))
-  }
+    setContacts(contacts.filter((contact) => contact.id !== id));
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -100,9 +113,13 @@ export default function EmergencyContactsManagementPage() {
         <div className="max-w-3xl mx-auto">
           {/* Emergency Contacts Form */}
           <div className="bg-white rounded-xl p-8 shadow-xl mb-8">
-            <h1 className="text-2xl font-bold text-center mb-6">Emergency Contacts</h1>
+            <h1 className="text-2xl font-bold text-center mb-6">
+              Emergency Contacts
+            </h1>
 
-            <h2 className="text-xl font-semibold mb-4">Add Emergency Contact</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Add Emergency Contact
+            </h2>
             <form onSubmit={handleAddContact} className="space-y-4">
               <div>
                 <input
@@ -134,7 +151,9 @@ export default function EmergencyContactsManagementPage() {
                   onClick={() => setShowCarrierDropdown(!showCarrierDropdown)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <span className="text-gray-500">{newContact.carrier || "Select Carrier"}</span>
+                  <span className="text-gray-500">
+                    {newContact.carrier || "Select Carrier"}
+                  </span>
                   <ChevronDown className="h-5 w-5 text-gray-400" />
                 </button>
 
@@ -145,11 +164,13 @@ export default function EmergencyContactsManagementPage() {
                         key={carrier}
                         className="px-4 py-2 hover:bg-gray-600 cursor-pointer flex items-center text-white"
                         onClick={() => {
-                          setNewContact((prev) => ({ ...prev, carrier }))
-                          setShowCarrierDropdown(false)
+                          setNewContact((prev) => ({ ...prev, carrier }));
+                          setShowCarrierDropdown(false);
                         }}
                       >
-                        {carrier === newContact.carrier && <Check className="h-4 w-4 text-blue-400 mr-2" />}
+                        {carrier === newContact.carrier && (
+                          <Check className="h-4 w-4 text-blue-400 mr-2" />
+                        )}
                         <span>{carrier}</span>
                       </div>
                     ))}
@@ -165,7 +186,9 @@ export default function EmergencyContactsManagementPage() {
               </button>
             </form>
 
-            <h2 className="text-xl font-semibold mt-8 mb-4">Saved Emergency Contacts</h2>
+            <h2 className="text-xl font-semibold mt-8 mb-4">
+              Saved Emergency Contacts
+            </h2>
             {contacts.length > 0 ? (
               <div className="space-y-3">
                 {contacts.map((contact) => (
@@ -182,7 +205,9 @@ export default function EmergencyContactsManagementPage() {
                         <div className="flex items-center text-sm text-gray-500">
                           <Phone className="h-3 w-3 mr-1" />
                           <span>{contact.phone}</span>
-                          {contact.carrier && <span className="ml-2">({contact.carrier})</span>}
+                          {contact.carrier && (
+                            <span className="ml-2">({contact.carrier})</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -194,8 +219,8 @@ export default function EmergencyContactsManagementPage() {
                             name: contact.name,
                             phone: contact.phone,
                             carrier: contact.carrier,
-                          })
-                          handleDeleteContact(contact.id)
+                          });
+                          handleDeleteContact(contact.id);
                         }}
                       >
                         <Edit className="h-5 w-5" />
@@ -211,7 +236,9 @@ export default function EmergencyContactsManagementPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">No emergency contacts saved yet.</p>
+              <p className="text-gray-500 text-center py-4">
+                No emergency contacts saved yet.
+              </p>
             )}
           </div>
 
@@ -224,7 +251,9 @@ export default function EmergencyContactsManagementPage() {
                   <Phone className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-gray-900 font-medium">Emergency (Police, Fire, Medical)</p>
+                  <p className="text-gray-900 font-medium">
+                    Emergency (Police, Fire, Medical)
+                  </p>
                   <p className="text-2xl font-bold text-red-600">911</p>
                 </div>
               </div>
@@ -234,7 +263,9 @@ export default function EmergencyContactsManagementPage() {
                 </div>
                 <div>
                   <p className="text-gray-900 font-medium">Poison Control</p>
-                  <p className="text-2xl font-bold text-red-600">1-800-222-1222</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    1-800-222-1222
+                  </p>
                 </div>
               </div>
             </div>
@@ -244,5 +275,5 @@ export default function EmergencyContactsManagementPage() {
 
       <Footer />
     </div>
-  )
+  );
 }
