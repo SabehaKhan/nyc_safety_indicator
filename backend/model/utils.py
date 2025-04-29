@@ -176,7 +176,7 @@ def get_crime_breakdown(neighborhood_name):
 
 
 #Task 5
-def calculate_borough_safety_index():
+def calculate_borough_safety_index(boroname):
     df=get_crime_data()
     borough_data = df.groupby('boroname').agg({
         'adjusted_crime_weight': 'sum',
@@ -197,11 +197,19 @@ def calculate_borough_safety_index():
         borough_data['safety_index'] = 1  
     else:
         borough_data['safety_index'] = 1 - ((borough_data['crime_rate'] - min_rate) / (max_rate - min_rate))
+    # Filter for the specific boroname
+    borough_safety = borough_data[borough_data['boroname'] == boroname]
 
-    return borough_data[['boroname', 'crime_rate', 'safety_index']].sort_values(by='safety_index', ascending=False)
+    if borough_safety.empty:
+        return {"error": f"No data found for boroname: {boroname}"}
 
+    # Return only the safety index for the specific boroname
+    return borough_safety['safety_index'].iloc[0]
+
+    #return borough_data[['boroname', 'crime_rate', 'safety_index']].sort_values(by='safety_index', ascending=False)
+ 
 #Task 6
-def calculate_ntaname_safety_index():
+def calculate_ntaname_safety_index(ntaname):
     df=get_crime_data()
     crime_data = df.groupby("ntaname").agg({
         "adjusted_crime_weight": "sum",
@@ -226,4 +234,13 @@ def calculate_ntaname_safety_index():
 
     # Invert normalized crime rate to compute safety index
     crime_data["safety_index"] = (1 - crime_data["normalized_weighted_rate"]) * 100
-    return crime_data[["ntaname","safety_index"]].sort_values(by='safety_index', ascending=False)
+
+    # Filter for the specific boroname
+    neighborhood_safety = crime_data[crime_data['ntaname'] == ntaname]
+
+    if neighborhood_safety.empty:
+        return {"error": f"No data found for natname: {ntaname}"}
+
+    # Return only the safety index for the specific boroname
+    return neighborhood_safety['safety_index'].iloc[0]
+    #return crime_data[["ntaname","safety_index"]].sort_values(by='safety_index', ascending=False)
