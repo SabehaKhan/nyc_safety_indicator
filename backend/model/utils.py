@@ -235,12 +235,12 @@ def calculate_ntaname_safety_index(ntaname):
     # Invert normalized crime rate to compute safety index
     crime_data["safety_index"] = (1 - crime_data["normalized_weighted_rate"]) * 100
 
-    # Filter for the specific boroname
+    # Filter for the specific ntaname
     neighborhood_safety = crime_data[crime_data['ntaname'] == ntaname]
 
     if neighborhood_safety.empty:
-        return {"error": f"No data found for natname: {ntaname}"}
+        return {"error": f"No data found for ntaname: {ntaname}"}
 
-    # Return only the safety index for the specific boroname
+    # Return only the safety index for the specific ntaname
     return neighborhood_safety['safety_index'].iloc[0]
     #return crime_data[["ntaname","safety_index"]].sort_values(by='safety_index', ascending=False)
