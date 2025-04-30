@@ -7,5 +7,4 @@ router.register(r'reviews', ReviewViewSet, basename='review')
 
 urlpatterns = [
     path('', include(router.urls)),  # Standard RESTful endpoints
-    path('reviews/filter/', ReviewListView.as_view(), name='review-list'),  # Custom filtering endpoint
-]
+    ]

@@ -29,9 +29,9 @@ def get_crime_data():
     # Ensure the column names match your logic
     df['Date'] = pd.to_datetime(df['arrest_date'])
     df['crime_weight'] = df['law_cat_cd'].map({"F": 4, "D": 2, "V": 1})
-    crime_data = df.groupby("NTAName").agg({
+    crime_data = df.groupby("ntaname").agg({
     "crime_weight": "sum",       
-    "Population": "first"   
+    "population": "first"   
     }).reset_index()
     crime_weight_map = {
     # Highest Severity (Violent / Life Threatening)
