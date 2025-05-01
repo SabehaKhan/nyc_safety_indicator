@@ -1,8 +1,10 @@
 import os
 import django
 from safety_report.models import ArrestData
+from model.model_loader import load_model
 import pandas as pd
 import numpy as np
+import joblib
 from math import radians, sin, cos, sqrt, atan2
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')  # Replace 'server' with your project name
@@ -81,7 +83,7 @@ def get_crime_data():
 
     return df
 
-def predict_safety(lat, lon, model, radius=0.4):
+def predict_safety(lat, lon, model=load_model(), radius=0.4):
     df = get_crime_data()
 
     # Calculate distances
