@@ -149,4 +149,3 @@ function TestimonialCard({ testimonial }) {
     </div>
   )
 }
-

@@ -73,11 +73,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
-                  Safety Blog
-                </Link>
-              </li>
-              <li>
                 <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
                   FAQ
                 </Link>
@@ -151,4 +146,3 @@ export default function Footer() {
     </footer>
   )
 }
-

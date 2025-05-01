@@ -1,12 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { MapPin, Shield, Plus, Search, Star, StarOff, Edit, Trash2, ArrowUpDown } from "lucide-react"
+import { useState } from "react";
+import {
+  MapPin,
+  Shield,
+  Plus,
+  Search,
+  Star,
+  StarOff,
+  Edit,
+  Trash2,
+  ArrowUpDown,
+} from "lucide-react";
 
 export default function SavedLocations() {
-  const [sortBy, setSortBy] = useState("name")
-  const [sortOrder, setSortOrder] = useState("asc")
-  const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Mock data for saved locations
   const savedLocations = [
@@ -55,39 +65,39 @@ export default function SavedLocations() {
       lastUpdated: "3 days ago",
       alerts: 0,
     },
-  ]
+  ];
 
   // Filter locations based on search query
   const filteredLocations = savedLocations.filter(
     (location) =>
       location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      location.address.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      location.address.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Sort locations based on sort criteria
   const sortedLocations = [...filteredLocations].sort((a, b) => {
-    let comparison = 0
+    let comparison = 0;
 
     if (sortBy === "name") {
-      comparison = a.name.localeCompare(b.name)
+      comparison = a.name.localeCompare(b.name);
     } else if (sortBy === "score") {
-      comparison = a.score - b.score
+      comparison = a.score - b.score;
     } else if (sortBy === "lastUpdated") {
       // This is a simplified sort for the mock data
-      comparison = a.lastUpdated.localeCompare(b.lastUpdated)
+      comparison = a.lastUpdated.localeCompare(b.lastUpdated);
     }
 
-    return sortOrder === "asc" ? comparison : -comparison
-  })
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
 
   const toggleSort = (field) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(field)
-      setSortOrder("asc")
+      setSortBy(field);
+      setSortOrder("asc");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -118,7 +128,9 @@ export default function SavedLocations() {
             <button
               onClick={() => toggleSort("name")}
               className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md ${
-                sortBy === "name" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-700"
+                sortBy === "name"
+                  ? "bg-gray-100 text-gray-900"
+                  : "bg-white text-gray-700"
               } hover:bg-gray-50`}
             >
               Name
@@ -127,7 +139,9 @@ export default function SavedLocations() {
             <button
               onClick={() => toggleSort("score")}
               className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md ${
-                sortBy === "score" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-700"
+                sortBy === "score"
+                  ? "bg-gray-100 text-gray-900"
+                  : "bg-white text-gray-700"
               } hover:bg-gray-50`}
             >
               Safety Score
@@ -136,11 +150,15 @@ export default function SavedLocations() {
             <button
               onClick={() => toggleSort("lastUpdated")}
               className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md ${
-                sortBy === "lastUpdated" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-700"
+                sortBy === "lastUpdated"
+                  ? "bg-gray-100 text-gray-900"
+                  : "bg-white text-gray-700"
               } hover:bg-gray-50`}
             >
               Last Updated
-              {sortBy === "lastUpdated" && <ArrowUpDown className="ml-1 h-4 w-4" />}
+              {sortBy === "lastUpdated" && (
+                <ArrowUpDown className="ml-1 h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -151,7 +169,10 @@ export default function SavedLocations() {
         <ul className="divide-y divide-gray-200">
           {sortedLocations.length > 0 ? (
             sortedLocations.map((location) => (
-              <li key={location.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+              <li
+                key={location.id}
+                className="px-4 py-4 sm:px-6 hover:bg-gray-50"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -159,26 +180,41 @@ export default function SavedLocations() {
                     </div>
                     <div className="ml-3">
                       <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900">{location.name}</p>
-                        {location.favorite && <Star className="ml-2 h-4 w-4 text-yellow-500" />}
+                        <p className="text-sm font-medium text-gray-900">
+                          {location.name}
+                        </p>
+                        {location.favorite && (
+                          <Star className="ml-2 h-4 w-4 text-yellow-500" />
+                        )}
                         {location.alerts > 0 && (
                           <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            {location.alerts} {location.alerts === 1 ? "Alert" : "Alerts"}
+                            {location.alerts}{" "}
+                            {location.alerts === 1 ? "Alert" : "Alerts"}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{location.address}</p>
-                      <p className="text-xs text-gray-400 mt-1">Last updated: {location.lastUpdated}</p>
+                      <p className="text-sm text-gray-500">
+                        {location.address}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Last updated: {location.lastUpdated}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center bg-blue-100 px-2.5 py-0.5 rounded-full">
                       <Shield className="h-4 w-4 text-blue-500 mr-1" />
-                      <span className="text-sm font-medium text-blue-800">{location.score}</span>
+                      <span className="text-sm font-medium text-blue-800">
+                        {location.score}
+                      </span>
                     </div>
                     <div className="flex space-x-2">
                       <button className="text-gray-400 hover:text-yellow-500">
-                        {location.favorite ? <StarOff className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+                        {location.favorite ? (
+                          <StarOff className="h-5 w-5" />
+                        ) : (
+                          <Star className="h-5 w-5" />
+                        )}
                       </button>
                       <button className="text-gray-400 hover:text-blue-500">
                         <Edit className="h-5 w-5" />
@@ -193,12 +229,12 @@ export default function SavedLocations() {
             ))
           ) : (
             <li className="px-4 py-6 text-center text-gray-500">
-              No locations found. Try adjusting your search or add a new location.
+              No locations found. Try adjusting your search or add a new
+              location.
             </li>
           )}
         </ul>
       </div>
     </div>
-  )
+  );
 }
-
