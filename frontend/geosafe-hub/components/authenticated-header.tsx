@@ -241,6 +241,7 @@ export default function AuthenticatedHeader() {
                 </Link>
                 <button
                   onClick={() => {
+                    localStorage.removeItem("authToken");
                     logout();
                     setUserMenuOpen(false);
                   }}
@@ -338,6 +339,7 @@ export default function AuthenticatedHeader() {
             <div className="mt-8 pt-6 border-t border-gray-200">
               <button
                 onClick={() => {
+                  localStorage.removeItem("authToken");
                   logout();
                   setMobileMenuOpen(false);
                 }}
