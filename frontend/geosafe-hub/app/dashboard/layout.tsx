@@ -1,39 +1,75 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Home,
-  User,
-  LogOut,
-  Menu,
-  X,
-  Star,
-  Phone,
-  BarChart3,
-} from "lucide-react";
+import { Home, User, LogOut, Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
+import AxiosInstance from "@/components/AxiosInstance";
+
+type User = {
+  first_name: string;
+  last_name: string;
+  email: string;
+};
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    setToken(storedToken);
+  }, []);
+
+  // Add this useEffect to fetch user data when token is available
+  useEffect(() => {
+    if (token) {
+      fetchUserData();
+    }
+  }, [token]);
+
+  const refreshAccessToken = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) return null;
+      const response = await AxiosInstance.post("/token/refresh/", {
+        refresh: refreshToken,
+      });
+      localStorage.setItem("authToken", response.data.access);
+      setToken(response.data.access);
+      return response.data.access;
+    } catch (err) {
+      console.error("Token refresh failed:", err);
+      return null;
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      let authToken = token || (await refreshAccessToken());
+      if (!authToken) return;
+      const res = await AxiosInstance.get("/user-details/", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setUser(res.data);
+      console.log(res.data);
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      const newToken = await refreshAccessToken();
+      if (newToken) fetchUserData();
+    }
+  };
 
   const navigation = [
-    { name: "Overview", href: "/dashboard", icon: Home },
-    { name: "Saved Locations", href: "/dashboard/saved-locations", icon: Star },
-    {
-      name: "Emergency Contacts",
-      href: "/dashboard/emergency-contacts",
-      icon: Phone,
-    },
-    { name: "Safety Reports", href: "/dashboard/reports", icon: BarChart3 },
+    { name: "Safety Tips", href: "/dashboard", icon: Home },
     { name: "Profile & Settings", href: "/dashboard/profile", icon: User },
   ];
 
@@ -45,7 +81,6 @@ export default function DashboardLayout({
           className="fixed inset-0 bg-gray-900/80 z-40"
           style={{ display: sidebarOpen ? "block" : "none" }}
         />
-
         <div
           className={`fixed inset-y-0 left-0 z-50 w-72 bg-white transition-transform duration-300 transform ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -176,8 +211,12 @@ export default function DashboardLayout({
                 </button>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">John Doe</p>
-                <p className="text-xs text-gray-500">john.doe@example.com</p>
+                <p className="text-sm font-medium text-gray-700">
+                  {user ? `${user.first_name} ${user.last_name}` : "Loading..."}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {user ? user.email : ""}
+                </p>
               </div>
             </div>
           </div>

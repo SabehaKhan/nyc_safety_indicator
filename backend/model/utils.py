@@ -207,7 +207,7 @@ def calculate_borough_safety_index(boroname):
         return {"error": f"No data found for boroname: {boroname}"}
 
     # Return only the safety index for the specific boroname
-    return borough_safety['safety_index'].iloc[0]
+    return borough_safety['safety_index'].iloc[0]*100
 
     #return borough_data[['boroname', 'crime_rate', 'safety_index']].sort_values(by='safety_index', ascending=False)
  

@@ -20,4 +20,6 @@ urlpatterns = [
     path('api/emergency/delete/', EmergencyContactDelete.as_view(), name = "delete_emergency_contact"),
     path('api/emergency/sendAlert/', EmergencyAlert.as_view(), name="send_emergency_alert"),
     path('api/crime-news/', CrimeNews.as_view(), name = "recent_crime_news"),
+    path('api/user-details/', UserDetail.as_view(), name = "user_details"),
+    path('api/user-update/', UpdateUserProfile.as_view(), name = "user_update"),
 ]
