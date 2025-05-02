@@ -99,7 +99,7 @@ def predict_safety(lat, lon, model=load_model(), radius=0.4):
     weighted_crime_rate = (crime_weight / population) * 100000 if population > 0 else 0
 
     features = pd.DataFrame({
-        "crime_weight": [crime_weight],
+        "adjusted_crime_weight": [crime_weight],
         "Population": [population],
         "weighted_crime_rate": [weighted_crime_rate],
     })
@@ -110,11 +110,12 @@ def predict_safety(lat, lon, model=load_model(), radius=0.4):
     )
     safety_index = model.predict(features)[0]
 
-    threshold = 50  # Define your safety threshold
-    if safety_index > threshold:
-        return f"Safe (Safety Index: {safety_index:.2f})"
-    else:
-        return f"Not Safe (Safety Index: {safety_index:.2f})"
+    # threshold = 50  # Define your safety threshold
+    # if safety_index > threshold:
+    #     return f"Safe (Safety Index: {safety_index:.2f})"
+    # else:
+    #     return f"Not Safe (Safety Index: {safety_index:.2f})"
+    return safety_index
     
 
 #Task 1

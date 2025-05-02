@@ -17,30 +17,33 @@ import Footer from "../components/footer"
 import ReviewList from "../components/review-list";
 import CrimeChartSection from "../components/CrimeStats"
 import CrimeLineGraph from "../components/CrimeTrendsChart"
-
+import axios from "axios"; 
+import AxiosInstanceAny from "@/components/AxiosInstanceAny"
 
 export default function SafetyReportPage() {
 
-  const [selectedLocation, setSelectedLocation] = useState("Manhattan")
+  type LocationType = typeof nycLocations.boroughs[number] | keyof typeof nycLocations.neighborhoods;
+  
+  const [selectedLocation, setSelectedLocation] = useState<LocationType>("Manhattan");
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [showSeriousCrimes, setShowSeriousCrimes] = useState(false)
   const [showPieChart, setShowPieChart] = useState(false)
   const [selectedCrime, setSelectedCrime] = useState("Theft")
   const [searchQuery, setSearchQuery] = useState(""); //for search in dropdown (reuse component for map?)
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]); //for dropdown search
+  const [safetyScore, setSafetyScore] = useState(70);
 
 
-  // NYC locations data REPLACE
-  const nycLocations = {
-    boroughs: ["Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island"],
-    neighborhoods: {
-      Manhattan: ["Upper East Side", "Harlem", "Chelsea", "Greenwich Village", "Midtown"],
-      Brooklyn: ["Williamsburg", "DUMBO", "Bay Ridge", "Park Slope", "Bedford-Stuyvesant"],
-      Queens: ["Astoria", "Long Island City", "Flushing", "Jamaica", "Forest Hills"],
-      Bronx: ["Riverdale", "Fordham", "Pelham Bay", "Mott Haven", "Concourse"],
-      "Staten Island": ["St. George", "Tottenville", "Great Kills", "New Dorp", "West Brighton"],
-    },
-  }
+  // NYC locations data
+  const nycLocations = 
+  {"boroughs":["Bronx","Brooklyn","Manhattan","Queens","Staten Island"],
+  neighborhoods:{
+  "Bronx":["Allerton","Bedford Park","Belmont","Bronx Park","Castle Hill-Unionport","Claremont Park","Claremont Village-Claremont East","Concourse-Concourse Village","Co-op City","Crotona Park","Crotona Park East","Eastchester-Edenwald-Baychester","Ferry Point Park-St. Raymond Cemetery","Fordham Heights","Highbridge","Hunts Point","Hutchinson Metro Center","Kingsbridge Heights-Van Cortlandt Village","Kingsbridge-Marble Hill","Longwood","Melrose","Morrisania","Morris Park","Mott Haven-Port Morris","Mount Eden-Claremont West","Mount Hope","Norwood","Parkchester","Pelham Bay-Country Club-City Island","Pelham Bay Park","Pelham Gardens","Pelham Parkway-Van Nest","Rikers Island","Riverdale-Spuyten Duyvil","Soundview-Bruckner-Bronx River","Soundview-Clason Point","Soundview Park","Throgs Neck-Schuylerville","Tremont","University Heights North-Fordham","University Heights South-Morris Heights","Van Cortlandt Park","Wakefield-Woodlawn","Westchester Square","West Farms","Williamsbridge-Olinville","Woodlawn Cemetery","Yankee Stadium-Macombs Dam Park"],
+  "Brooklyn":["Barren Island-Floyd Bennett Field","Bath Beach","Bay Ridge","Bedford-Stuyvesant East","Bedford-Stuyvesant West","Bensonhurst","Borough Park","Brighton Beach","Brooklyn Heights","Brooklyn Navy Yard","Brownsville","Bushwick East","Bushwick West","Canarsie","Canarsie Park & Pier","Carroll Gardens-Cobble Hill-Gowanus-Red Hook","Clinton Hill","Coney Island-Sea Gate","Crown Heights North","Crown Heights South","Cypress Hills","Downtown Brooklyn-DUMBO-Boerum Hill","Dyker Beach Park","Dyker Heights","East Flatbush-Erasmus","East Flatbush-Farragut","East Flatbush-Remsen Village","East Flatbush-Rugby","East New York-City Line","East New York-New Lots","East New York North","East Williamsburg","Flatbush","Flatbush West-Ditmas Park-Parkville","Flatlands","Fort Greene","Fort Hamilton","Gravesend East-Homecrest","Gravesend South","Gravesend West","Greenpoint","Green-Wood Cemetery","Highland Park-Cypress Hills Cemeteries South","Holy Cross Cemetery","Kensington","Lincoln Terrace Park","Madison","Mapleton-Midwood West","Marine Park-Mill Basin-Bergen Beach","Marine Park-Plumb Island","McGuire Fields","Midwood","Ocean Hill","Park Slope","Prospect Heights","Prospect Lefferts Gardens-Wingate","Prospect Park","Sheepshead Bay-Manhattan Beach-Gerritsen Beach","South Williamsburg","Spring Creek-Starrett City","Sunset Park Central","Sunset Park East-Borough Park West","Sunset Park West","The Evergreens Cemetery","Williamsburg","Windsor Terrace-South Slope"],
+  "Manhattan":["Central Park","Chelsea-Hudson Yards","Chinatown-Two Bridges","East Harlem North","East Harlem South","East Midtown-Turtle Bay","East Village","F","Financial District-Battery Park City","Gramercy","Greenwich Village","Hamilton Heights-Sugar Hill","Harlem North","Harlem South","Hell's Kitchen","Highbridge Park","Inwood","Inwood Hill Park","Lower East Side","Manhattanville-West Harlem","Midtown South-Flatiron-Union Square","Midtown-Times Square","Morningside Heights","Murray Hill-Kips Bay","Randall's Island","SoHo-Little Italy-Hudson Square","Stuyvesant Town-Peter Cooper Village","The Battery-Governors Island-Ellis Island-Liberty Island","Tribeca-Civic Center","United Nations","Upper East Side-Carnegie Hill","Upper East Side-Lenox Hill-Roosevelt Island","Upper East Side-Yorkville","Upper West Side Central","Upper West Side-Lincoln Square","Upper West Side-Manhattan Valley","Washington Heights North","Washington Heights South","West Village"],
+  "Queens":["Alley Pond Park","Astoria Central","Astoria East-Woodside North","Astoria North-Ditmars-Steinway","Astoria Park","Auburndale","Baisley Park","Bayside","Bay Terrace-Clearview","Bellerose","Breezy Point-Belle Harbor-Rockaway Park-Broad Channel","Calvary & Mount Zion Cemeteries","Cambria Heights","College Point","Corona","Cunningham Park","Douglaston-Little Neck","East Elmhurst","East Flushing","Elmhurst","Far Rockaway-Bayswater","Flushing Meadows-Corona Park","Flushing-Willets Point","Forest Hills","Forest Park","Fresh Meadows-Utopia","Glendale","Glen Oaks-Floral Park-New Hyde Park","Highland Park-Cypress Hills Cemeteries North","Hollis","Howard Beach-Lindenwood","Jackson Heights","Jacob Riis Park-Fort Tilden-Breezy Point Tip","Jamaica","Jamaica Bay East","Jamaica Estates-Holliswood","Jamaica Hills-Briarwood","John F. Kennedy International Airport","Kew Gardens","Kew Gardens Hills","Kissena Park","LaGuardia Airport","Laurelton","Long Island City-Hunters Point","Maspeth","Middle Village","Middle Village Cemetery","Mount Olivet & All Faiths Cemeteries","Murray Hill-Broadway Flushing","North Corona","Oakland Gardens-Hollis Hills","Old Astoria-Hallets Point","Ozone Park","Ozone Park North","Pomonok-Electchester-Hillcrest","Queensboro Hill","Queensbridge-Ravenswood-Dutch Kills","Queens Village","Rego Park","Richmond Hill","Ridgewood","Rockaway Beach-Arverne-Edgemere","Rockaway Community Park","Rosedale","South Jamaica","South Ozone Park","South Richmond Hill","Springfield Gardens North-Rochdale Village","Springfield Gardens South-Brookville","St. Albans","St. John Cemetery","St. Michael's Cemetery","Sunnyside","Sunnyside Yards North","Sunnyside Yards South","Whitestone-Beechhurst","Woodhaven","Woodside"],
+  "Staten Island":["Annadale-Huguenot-Prince's Bay-Woodrow","Arden Heights-Rossville","Fort Wadsworth","Freshkills Park North","Freshkills Park South","Grasmere-Arrochar-South Beach-Dongan Hills","Great Kills-Eltingville","Great Kills Park","Mariner's Harbor-Arlington-Graniteville","Miller Field","New Dorp-Midland Beach","New Springville-Willowbrook-Bulls Head-Travis","Oakwood-Richmondtown","Port Richmond","Rosebank-Shore Acres-Park Hill","Snug Harbor","St. George-New Brighton","Todt Hill-Emerson Hill-Lighthouse Hill-Manor Heights","Tompkinsville-Stapleton-Clifton-Fox Hills","Tottenville-Charleston","Westerleigh-Castleton Corners","West New Brighton-Silver Lake-Grymes Hill"]}
+}
 
 
   //flatten arr for dropdown
@@ -49,28 +52,62 @@ export default function SafetyReportPage() {
     ...Object.values(nycLocations.neighborhoods).flat()
   ];
 
-  //hook for search; runs when searchQuery chnges, filters locations arr (might have to chnge depending on database setup)
+  // Function to fetch the safety score
+  const fetchSafetyScore = async (location: string) => {
+    if (!location) {
+      console.error("No location provided for fetching safety score.");
+      return;
+    }
+  
+    let params = {};
+  
+    if (nycLocations.boroughs.includes(location)) {
+      // If the selected location is a borough
+      params = { boroname: location }; // No need for encodeURIComponent
+    } else if (Object.values(nycLocations.neighborhoods).flat().includes(location)) {
+      // If the selected location is a neighborhood
+      params = { ntaname: location }; // No need for encodeURIComponent
+    } else {
+      console.error("Invalid location provided:", location);
+      return;
+    }
+  
+    console.log("Fetching safety score with params:", params);
+  
+    try {
+      const response = await AxiosInstanceAny.get('/safety/safety-score/', {  
+        params // Pass the query parameters
+      });
+      console.log("Raw response:", response.data); // Log the response data
+
+      setSafetyScore(response.data.safety_score || 70); // Set the safety score or default to 70
+    } catch (error: any) {
+      console.error("Failed to fetch safety score:", error.response?.data || error.message);
+      setSafetyScore(70); // Default to 70 on error
+    }
+  };
+
+  // Handle location selection from the dropdown
+  const handleLocationSelect = (location: string) => {
+    setSelectedLocation(location as LocationType);
+    setDropdownOpen(false);
+    setSearchQuery(""); // Clear the search query
+    fetchSafetyScore(location); // Fetch the safety score for the selected location
+  };
+
+  // useEffect for filtering locations based on searchQuery
   useEffect(() => {
-    const results = allLocations.filter(location =>
+    const results = allLocations.filter((location) =>
       location.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredLocations(results);
   }, [searchQuery]);
 
-  // PLACEHOLDER DATA
-  const safetyScores = {
-    Manhattan: 73,
-    Brooklyn: 68,
-    Queens: 71,
-    Bronx: 62,
-    "Staten Island": 78,
-    "Upper East Side": 82,
-    Harlem: 65,
-    "Bay Ridge": 76,
-  }
+  // Fetch safety score for the default location on initial render
+  useEffect(() => {
+    fetchSafetyScore(selectedLocation);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
-  const safetyScore = safetyScores[selectedLocation] || 70 //default score for if fetch fails- USE IN HOOK for location fetching when integrating with backend
-  
   const lastUpdated = "Today at 09:45"
 
 
@@ -128,44 +165,66 @@ export default function SafetyReportPage() {
                     <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
                   </button>
 
-		  {dropdownOpen && (
-  		    <div className="absolute z-10 mt-1 w-64 max-h-96 overflow-y-auto bg-black/90 backdrop-blur-md border border-white/30 rounded-lg shadow-lg">
-    		      <div className="p-2">
-		      
-		      // SEARCH INPUT FOR DROPDOWN
-      		      	 <input
-                          type="text"
-                          placeholder="Search locations..."
-                          className="w-full px-3 py-2 bg-black/30 border border-white/30 rounded-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-			
-    		      </div>
+                  {dropdownOpen && (
+  <div className="absolute z-10 mt-1 w-64 max-h-96 overflow-y-auto bg-black/90 backdrop-blur-md border border-white/30 rounded-lg shadow-lg">
+    <div className="p-2">
+      {/* SEARCH INPUT FOR DROPDOWN */}
+      <input
+        type="text"
+        placeholder="Search locations..."
+        className="w-full px-3 py-2 bg-black/30 border border-white/30 rounded-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
 
-		      {filteredLocations.length > 0 ? (
-                        <div className="p-2">
-                          {filteredLocations.map((location) => (
-                            <button
-                              key={location}
-                              onClick={() => {
-                                setSelectedLocation(location);
-                                setDropdownOpen(false);
-                                setSearchQuery(""); //clear search on selection
-                              }}
-                              className={`w-full text-left px-3 py-2 rounded-md ${
-                                selectedLocation === location ? "bg-blue-500/50 text-white" : "text-white/90 hover:bg-white/10"
-                              }`}
-                            >
-                              {location}
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-2 text-white/70">No locations found.</div> //if none found
-                      )}
-                    </div>
-                  )}
+    {filteredLocations.length > 0 ? (
+      <div className="p-2">
+        {/* Boroughs Section */}
+        <div className="mb-4">
+          <h3 className="text-sm font-bold text-white/70 mb-2">Boroughs</h3>
+          {filteredLocations
+            .filter((location) => nycLocations.boroughs.includes(location))
+            .map((borough) => (
+              <button
+                key={borough}
+                onClick={() => handleLocationSelect(borough)}
+                className={`w-full text-left px-3 py-2 rounded-md ${
+                  selectedLocation === borough
+                    ? "bg-blue-500/50 text-white"
+                    : "text-white/90 hover:bg-white/10"
+                }`}
+              >
+                {borough}
+              </button>
+            ))}
+        </div>
+
+        {/* Neighborhoods Section */}
+        <div>
+          <h3 className="text-sm font-bold text-white/70 mb-2">Neighborhoods</h3>
+          {filteredLocations
+            .filter((location) => !nycLocations.boroughs.includes(location))
+            .map((neighborhood) => (
+              <button
+                key={neighborhood}
+                onClick={() => handleLocationSelect(neighborhood)}
+                className={`w-full text-left px-3 py-2 rounded-md ${
+                  selectedLocation === neighborhood
+                    ? "bg-blue-500/50 text-white"
+                    : "text-white/90 hover:bg-white/10"
+                }`}
+              >
+                {neighborhood}
+              </button>
+            ))}
+        </div>
+      </div>
+    ) : (
+      <div className="p-2 text-white/70">No locations found.</div> // If none found
+    )}
+  </div>
+)}
                 </div>
               </div>
 		      
@@ -213,10 +272,10 @@ export default function SafetyReportPage() {
             </div>
 
             <div className="mb-8">
-              <CrimeLineGraph location={selectedLocation}
-	        location={selectedLocation}
-  		selectedCrime={selectedCrime}
-	      />
+      <CrimeLineGraph 
+        location={selectedLocation}
+        selectedCrime={selectedCrime}
+      />
             </div>
 
             <div className="mb-8">
