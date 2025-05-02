@@ -39,12 +39,12 @@ class SafetyScoreView(APIView):
         try:
             if boroname:
                 # Calculate safety score for a specific borough
-                safety_score = calculate_borough_safety_index(boroname)
+                safety_score = round(calculate_borough_safety_index(boroname))
                 return Response({"safety_score": safety_score}, status=status.HTTP_200_OK)
 
             elif ntaname:
                 # Calculate safety score for a specific neighborhood
-                safety_score = calculate_ntaname_safety_index(ntaname)
+                safety_score = round(calculate_ntaname_safety_index(ntaname))
                 return Response({"safety_score": safety_score}, status=status.HTTP_200_OK)
 
             elif lat and lon:
@@ -56,7 +56,7 @@ class SafetyScoreView(APIView):
                     return Response({"error": "'latitude' and 'longitude' must be valid numbers."}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Calculate safety score using latitude and longitude
-                safety_score = predict_safety(lat, lon)
+                safety_score = round(predict_safety(lat, lon))
                 return Response({"safety_score": safety_score}, status=status.HTTP_200_OK)
 
             else:
