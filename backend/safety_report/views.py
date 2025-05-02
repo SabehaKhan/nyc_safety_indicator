@@ -15,7 +15,7 @@ class SafetyScoreView(APIView):
     def get(self, request):
         boroname = request.query_params.get('boroname', None)
         ntaname = request.query_params.get('ntaname', None)
-
+        
         if boroname:
             safety_score = calculate_borough_safety_index(boroname)
         elif ntaname:

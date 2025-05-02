@@ -67,7 +67,38 @@ class RegisterViewSet(viewsets.ModelViewSet):
             "error": "User creation failed.",
             "details": serializer.errors  # This will show which fields failed validation
         }, status=status.HTTP_400_BAD_REQUEST)
+    
+class UpdateUserProfile(APIView):
+    permission_classes = [IsAuthenticated]  # Only authenticated users can access this
 
+    def put(self, request):
+        # Get the current user instance
+        user = request.user
+
+        # Initialize the serializer with the user instance and the data from the request
+        serializer = UserSerializer(user, data=request.data)
+
+        if serializer.is_valid():
+            # Save the updated user data
+            serializer.save()
+
+            # Return the updated data in the response
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # If serializer is not valid, return the errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# retrieving user details
+class UserDetail(APIView):
+    permission_classes = [IsAuthenticated]  # Only authenticated users can access this
+
+    def get(self, request):
+        user = request.user  # The authenticated user
+    
+        # Serialize the user data
+        serializer = UserSerializer(user)
+        print(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 # adding emergency contact to db
 class EmergencyContactAdd(APIView):   
     permission_classes = [IsAuthenticated]
@@ -196,6 +227,9 @@ class CrimeNews(APIView):
         "&language=en"
         "&category=crime"
     )
+        def truncate_description(desc, word_limit=50):
+            words = desc.split()
+            return ' '.join(words[:word_limit]) + ('...' if len(words) > word_limit else '')
 
         response = requests.get(url)
         if response.status_code == 200:
@@ -205,7 +239,7 @@ class CrimeNews(APIView):
             articles = [
                 {
                     "title": item["title"],
-                    "description": item.get("description", ""),
+                    "description": truncate_description(item.get("description", "")),
                     "url": item["link"],
                     "published_at": item.get("pubDate", ""),
                     "publisher": item.get("source_id", ""),
