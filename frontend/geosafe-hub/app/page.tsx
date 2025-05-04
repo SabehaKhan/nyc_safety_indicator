@@ -6,8 +6,8 @@ import Footer from "./components/footer";
 import AuthenticatedHeader from "./components/authenticated-header";
 import { Suspense } from "react";
 import TestimonialMarquee from "./components/testimonial-marquee";
-// Import the HeaderMapButton component
 import HeaderMapButton from "./components/header-map-button";
+import SearchBar from "./components/SearchBar";
 
 // Import the NewsHeadlines component at the top of the file
 import NewsHeadlines from "./components/news-headlines";
@@ -63,43 +63,17 @@ export default function Home() {
               decisions about where to live, work, or visit.
             </p>
 
-            {/* Add the HeaderMapButton to the search section */}
-            <div className="max-w-3xl mx-auto mb-4 relative">
-              <div className="flex">
-                <div className="relative flex-1">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-gray-500"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.3-4.3" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    className="w-full py-4 pl-12 pr-4 bg-white/10 backdrop-blur-md rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-300 border border-white/30"
-                    placeholder="Search Any Location for Safety Information..."
-                  />
-                </div>
-                <button className="px-8 py-4 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors">
-                  Search
-                </button>
-                <div className="ml-2 flex items-center justify-center">
-                  <HeaderMapButton />
-                </div>
+            <div className="max-w-3xl mx-auto mb-4 flex items-center">
+              <div className="relative flex-grow">
+                <SearchBar />
+              </div>
+              <div className="ml-2">
+                <HeaderMapButton />
               </div>
             </div>
+
             <p className="text-gray-300 mb-12">
-              Try Search "Manhattan" or "Brooklyn"
+              Try searching for "Woodside" or "Alley Pond Park"
             </p>
             {/* And add the NewsHeadlines component after it: */}
             <div className="max-w-md mx-auto mb-12">

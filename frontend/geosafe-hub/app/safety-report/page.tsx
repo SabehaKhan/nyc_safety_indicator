@@ -9,12 +9,18 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import Footer from "../components/footer";
-import ReviewList from "../components/review-list";
-import CrimeChartSection from "../components/CrimeStats";
+import { useRouter, useParams } from "next/navigation"
+import Footer from "..//components/footer";
+import ReviewList from "..//components/review-list";
+import CrimeChartSection from "..//components/CrimeStats";
+import SearchBar from "..//components/SearchBar";
 import AxiosInstanceAny from "@/components/AxiosInstanceAny";
 
+
 export default function SafetyReportPage() {
+
+  const { neighborhood } = useParams(); //dynamic segment
+
    // NYC locations data
    const nycLocations = 
    {"boroughs":["Bronx","Brooklyn","Manhattan","Queens","Staten Island"],
@@ -99,7 +105,7 @@ export default function SafetyReportPage() {
 
   // Fetch safety score for the default location on initial render
   useEffect(() => {
-    fetchSafetyScore(selectedLocation);
+      fetchSafetyScore(selectedLocation);
   }, []); // Empty dependency array ensures this runs only once on mount
 
   const boroname = nycLocations.boroughs.includes(selectedLocation)
@@ -107,6 +113,8 @@ export default function SafetyReportPage() {
     : getBoronameFromNtaname(selectedLocation);
 
   const lastUpdated = "Today at 09:45";
+
+  const router = useRouter();
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -154,74 +162,8 @@ export default function SafetyReportPage() {
                 <h1 className="text-3xl font-bold text-white">
                   {selectedLocation} Safety Report
                 </h1>
-
-                <div className="relative mt-2">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-2 text-white hover:bg-white/20"
-                  >
-                    <MapPin className="h-5 w-5" />
-                    <span>{selectedLocation}</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute z-10 mt-1 w-64 max-h-96 overflow-y-auto bg-black/90 backdrop-blur-md border border-white/30 rounded-lg shadow-lg">
-                      <div className="p-2">
-                        <input
-                          type="text"
-                          placeholder="Search locations..."
-                          className="w-full px-3 py-2 bg-black/30 border border-white/30 rounded-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
-
-                      {filteredLocations.length > 0 ? (
-                        <div className="p-2">
-                          <div className="mb-4">
-                            <h3 className="text-sm font-bold text-white/70 mb-2">Boroughs</h3>
-                            {filteredLocations
-                              .filter((location) => nycLocations.boroughs.includes(location))
-                              .map((borough) => (
-                                <button
-                                  key={borough}
-                                  onClick={() => handleLocationSelect(borough)}
-                                  className={`w-full text-left px-3 py-2 rounded-md ${
-                                    selectedLocation === borough
-                                      ? "bg-blue-500/50 text-white"
-                                      : "text-white/90 hover:bg-white/10"
-                                  }`}
-                                >
-                                  {borough}
-                                </button>
-                              ))}
-                          </div>
-
-                          <div>
-                            <h3 className="text-sm font-bold text-white/70 mb-2">Neighborhoods</h3>
-                            {filteredLocations
-                              .filter((location) => !nycLocations.boroughs.includes(location))
-                              .map((neighborhood) => (
-                                <button
-                                  key={neighborhood}
-                                  onClick={() => handleLocationSelect(neighborhood)}
-                                  className={`w-full text-left px-3 py-2 rounded-md ${
-                                    selectedLocation === neighborhood
-                                      ? "bg-blue-500/50 text-white"
-                                      : "text-white/90 hover:bg-white/10"
-                                  }`}
-                                >
-                                  {neighborhood}
-                                </button>
-                              ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-2 text-white/70">No locations found.</div>
-                      )}
-                    </div>
-                  )}
+                <div className="relative mt-2 w-full">
+                  <SearchBar />
                 </div>
               </div>
 
