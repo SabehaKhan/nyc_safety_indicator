@@ -178,12 +178,14 @@ class EmergencyAlert(APIView):
             phone = contact.phone_number
             carrier = contact.carrier.lower()
             carrier = re.sub(r'[^a-zA-Z]', '', carrier).lower()
+            print(f"Processed carrier: {carrier}")
+
             if carrier not in SMS_GATEWAYS:
                 error_contacts.append(phone)
                 continue  # Skip this contact if carrier is invalid
 
             sms_gateway = f"{phone}{SMS_GATEWAYS[carrier]}"
-            message_body = f"Test Message"
+            message_body = "Test" 
           
            
             try:
@@ -197,7 +199,7 @@ class EmergencyAlert(APIView):
                 print(f"Message sent to {sms_gateway}")
                 success_count += 1
             except Exception as e:
-                print(f"Failed to send SMS to {sms_gateway}: {e}")
+                print(f"SMTP error: {e}")
                 error_contacts.append(phone)
 
         # Final response

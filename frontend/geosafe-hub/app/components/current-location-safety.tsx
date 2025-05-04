@@ -9,7 +9,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import AxiosInstanceAny from "@/components/AxiosInstanceAny";
 import AxiosInstance from "@/components/AxiosInstance";
+
 
 type LocationData = {
   latitude: number;
@@ -44,19 +46,77 @@ export default function CurrentLocationSafety() {
     useState<SafetyScoreData | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
+  // Function to refresh access token
+  const refreshAccessToken = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) return null;
+      const response = await AxiosInstance.post("/token/refresh/", {
+        refresh: refreshToken,
+      });
+      localStorage.setItem("authToken", response.data.access);
+      setToken(response.data.access);
+      return response.data.access;
+    } catch (err) {
+      console.error("Token refresh failed:", err);
+      return null;
+    }
+  };
+
   // Get token on component mount
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
     setToken(storedToken);
   }, []);
 
-  // Check if we're in a secure context on component mount
+  // Check if we're in a secure context and automatically use location without asking again
   useEffect(() => {
-    // Check if we're in a secure context (HTTPS)
+    // Check for secure context
     if (typeof window !== "undefined" && window.isSecureContext === false) {
       setPermissionStatus("insecure_context");
       setError(
         "Geolocation requires a secure connection (HTTPS). Using demo mode."
+      );
+      loadDemoLocation();
+      return;
+    }
+
+    // Automatically get location on page load/refresh without asking again
+    if (navigator.geolocation) {
+      setIsLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Success - we have the location
+          setPermissionStatus("granted");
+          const newLocationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            address: null,
+            neighborhood: null,
+          };
+
+          setLocationData(newLocationData);
+
+          // Get address and neighborhood from coordinates
+          fetchAddressAndNeighborhood(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+
+          // Get safety score
+          fetchSafetyScoreFromAPI(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+
+          setIsLoading(false);
+        },
+        (error) => {
+          // Error - user hasn't granted permission or other error
+          console.error("Geolocation error:", error);
+          setPermissionStatus("not_asked");
+          setIsLoading(false);
+        }
       );
     }
   }, []);
@@ -73,7 +133,6 @@ export default function CurrentLocationSafety() {
         "Geolocation is not supported by your browser. Using demo mode."
       );
       setIsLoading(false);
-      // Load demo data after a short delay
       setTimeout(() => loadDemoLocation(), 500);
       return;
     }
@@ -84,12 +143,14 @@ export default function CurrentLocationSafety() {
         (position) => {
           // Success callback
           setPermissionStatus("granted");
-          setLocationData({
+          const newLocationData = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             address: null,
             neighborhood: null,
-          });
+          };
+
+          setLocationData(newLocationData);
 
           // Get address and neighborhood from coordinates using reverse geocoding
           fetchAddressAndNeighborhood(
@@ -145,25 +206,7 @@ export default function CurrentLocationSafety() {
       setPermissionStatus("unavailable");
       setError("Unable to access location services. Using demo mode instead.");
       setIsLoading(false);
-      // Load demo data after a short delay
       setTimeout(() => loadDemoLocation(), 500);
-    }
-  };
-
-  // Function to refresh token if needed
-  const refreshAccessToken = async () => {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) return null;
-      const response = await AxiosInstance.post("/token/refresh/", {
-        refresh: refreshToken,
-      });
-      localStorage.setItem("authToken", response.data.access);
-      setToken(response.data.access);
-      return response.data.access;
-    } catch (err) {
-      console.error("Token refresh failed:", err);
-      return null;
     }
   };
 
@@ -214,18 +257,16 @@ export default function CurrentLocationSafety() {
       console.log("Formatted address:", formattedAddress);
 
       // Update location data with address info
-      setLocationData((prev) =>
-        prev
-          ? {
-              ...prev,
-              address: formattedAddress || prev.address,
-              neighborhood: neighborhood,
-            }
-          : null
-      );
+      const updatedLocationData = {
+        ...(locationData || { latitude, longitude }),
+        address: formattedAddress,
+        neighborhood: neighborhood,
+      };
+
+      setLocationData(updatedLocationData);
 
       // Now that we have the neighborhood, send it along with coordinates to the safety API
-      fetchSafetyScoreFromAPI(latitude, longitude, neighborhood);
+      fetchSafetyScoreFromAPI(latitude, longitude);
     } catch (error) {
       console.error("Error fetching address and neighborhood:", error);
       setError(
@@ -238,117 +279,71 @@ export default function CurrentLocationSafety() {
   };
 
   // Function to fetch safety score from API
-  const fetchSafetyScoreFromAPI = async (
-    latitude: number,
-    longitude: number,
-    neighborhood?: string
-  ) => {
-    try {
-      // Call the safety-score endpoint from safety_report app
-      // Now including neighborhood in the request if available
-      const response = await AxiosInstance.get(
-        `/safety/safety-score/?ntaname=${neighborhood}`,
-        
-      );
+const [alertSent, setAlertSent] = useState(false); // Add this at the top of your component
 
+const fetchSafetyScoreFromAPI = async (latitude: number, longitude: number) => {
+  try {
+    const response = await AxiosInstanceAny.get(`/safety/safety-score/`, {
+      params: {
+        latitude: latitude,
+        longitude: longitude,
+      },
+    });
 
-      console.log("Safety Score API response:", response.data);
+    console.log("Safety Score API response:", response.data);
 
-      // Set the safety score data from API
-      setSafetyScoreData(response.data);
-    } catch (error) {
-      console.error("Error fetching safety score from API:", error);
+    setSafetyScoreData({
+      score: response.data.safety_score,
+      ...response.data,
+    });
 
-      // If API call fails, try refreshing token and retrying once
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        try {
-          const response = await AxiosInstance.get("/safety/safety-score/", {
-            headers: { Authorization: `Bearer ${newToken}` },
-            params: {
-              latitude: latitude,
-              longitude: longitude,
-              neighborhood: neighborhood, // Include neighborhood in retry too
+    if (response.data.safety_score < 40 && !alertSent) {
+      console.log("Safety score is low, sending emergency alert...");
+      try {
+        let authToken = token || (await refreshAccessToken());
+        if (!authToken) return;
+
+        await AxiosInstance.post(
+          "/emergency/sendAlert/",
+          { location: locationData?.address || "Unknown" },
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
             },
-          });
-
-          console.log("Safety Score API response (retry):", response.data);
-          setSafetyScoreData(response.data);
-        } catch (retryError) {
-          console.error(
-            "Error fetching safety score after token refresh:",
-            retryError
-          );
-          setError(
-            "Unable to retrieve safety data for your location from the server."
-          );
-          // Fall back to mock data
-          fetchSafetyScore(latitude, longitude);
-        }
-      } else {
-        setError(
-          "Unable to retrieve safety data for your location from the server."
+          }
         );
-        // Fall back to mock data
-        fetchSafetyScore(latitude, longitude);
+        setAlertSent(true);
+      } catch (error) {
+        console.error("Error sending alert:", error);
       }
     }
-  };
+  } catch (error) {
+    console.error("Error fetching safety score from API:", error);
+  }
+};
+
 
   // Function to load demo location data
   const loadDemoLocation = () => {
     // Set demo location data (New York City)
-    setLocationData({
+    const demoLocationData = {
       latitude: 40.7128,
       longitude: -74.006,
       address: "Manhattan, New York, NY",
       neighborhood: "Manhattan",
-    });
+    };
+
+    setLocationData(demoLocationData);
 
     // Fetch demo safety score from API first
-    fetchSafetyScoreFromAPI(40.7128, -74.006, "Manhattan");
+    fetchSafetyScoreFromAPI(40.7128, -74.006);
 
     // Update permission status to show the data
     setPermissionStatus("granted");
 
     // Add a note that this is demo data
     setError("Showing demo data for Manhattan, New York.");
-  };
-
-  // Fallback function to fetch safety score (mock) if API fails
-  const fetchSafetyScore = async (latitude: number, longitude: number) => {
-    try {
-      // In a real app, this would be an API call to your backend
-      // This is a mock implementation
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Mock safety scores based on neighborhoods
-      const mockSafetyScores: Record<string, number> = {
-        Manhattan: 73,
-        Brooklyn: 68,
-        Queens: 71,
-        Bronx: 62,
-        "Staten Island": 78,
-        "Unknown Area": 65,
-      };
-
-      // Get the neighborhood from the location data
-      const neighborhood = locationData?.neighborhood || "Unknown Area";
-
-      // Set the safety score as fallback
-      setSafetyScoreData({
-        score: mockSafetyScores[neighborhood],
-        area_name: neighborhood,
-        risk_level: getSafetyLevel(mockSafetyScores[neighborhood]).text,
-      });
-
-      console.log("Using mock safety score:", mockSafetyScores[neighborhood]);
-    } catch (error) {
-      console.error("Error fetching mock safety score:", error);
-      setError("Unable to retrieve safety data for your location.");
-    }
   };
 
   // View detailed safety report for this location
