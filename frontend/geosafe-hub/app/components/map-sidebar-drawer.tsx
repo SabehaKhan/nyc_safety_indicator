@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Shield, BarChart2, MapPin, TrendingDown, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { useState, useEffect } from "react";
+import AxiosInstanceAny from "@/components/AxiosInstanceAny";
 
 type CrimeStat = {
   category: string
@@ -25,11 +27,46 @@ export default function MapSidebarDrawer({
   isOpen,
   onClose,
   location,
-  safetyScore,
-  crimeStats,
-  resources,
   coords,
 }: Props) {
+  const [safetyScore, setSafetyScore] = useState<number | null>(null);
+  const [crimeStats, setCrimeStats] = useState<CrimeStat[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (location) {
+      //fetch safety data based on the 'location' (neighborhood)
+      const fetchData = async () => {
+        try {
+          const params = { ntaname: location };
+          const safetyResponse = await AxiosInstanceAny.get("/safety/safety-score/", { params });
+          setSafetyScore(safetyResponse.data.safety_score);
+
+          //fetch crime stats
+          const crimeResponse = await AxiosInstanceAny.get("/api/crime-stats", { params });
+          setCrimeStats(crimeResponse.data);
+
+          //fetch nearby resources
+          const resourcesResponse = await AxiosInstanceAny.get("/api/resources", { params });
+          setResources(resourcesResponse.data);
+
+        } catch (error: any) {
+          console.error("Error fetching data for sidebar:", error.message);
+          setSafetyScore(null);
+          setCrimeStats([]);
+          setResources([]);
+        }
+      };
+
+      fetchData();
+    } else {
+      //reset when the sidebar is closed or no location is selected
+      setSafetyScore(null);
+      setCrimeStats([]);
+      setResources([]);
+    }
+  }, [location]);
+
 
   return (
   
@@ -54,17 +91,21 @@ export default function MapSidebarDrawer({
           </div>
 
           {/* Safety Score */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-blue-500/30 flex items-center justify-center">
-              <span className="text-2xl text-white font-bold">{safetyScore}</span>
+          {safetyScore !== null ? (
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 rounded-full bg-blue-500/30 flex items-center justify-center">
+                <span className="text-2xl text-white font-bold">{safetyScore}</span>
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${safetyScore > 70 ? "text-green-400" : safetyScore > 40 ? "text-yellow-400" : "text-red-400"}`}>
+                  {safetyScore > 70 ? "Low Risk" : safetyScore > 40 ? "Moderate Risk" : "High Risk"}
+                </p>
+                <p className="text-xs text-white/70">Last updated: Today</p>
+              </div>
             </div>
-            <div>
-              <p className={`text-sm font-medium ${safetyScore > 70 ? "text-green-400" : safetyScore > 40 ? "text-yellow-400" : "text-red-400"}`}>
-                {safetyScore > 70 ? "Low Risk" : safetyScore > 40 ? "Moderate Risk" : "High Risk"}
-              </p>
-              <p className="text-xs text-white/70">Last updated: Today</p>
-            </div>
-          </div>
+          ) : (
+            <p className="text-white/70 mb-6">Loading safety score...</p>
+          )}
 
 	  {/* lat/lng coordinates */}
 	  <div className="bg-white/5 backdrop-blur-sm rounded-md px-4 py-2 mb-6 border border-white/10">
@@ -88,32 +129,36 @@ export default function MapSidebarDrawer({
             <h3 className="text-white font-semibold text-md mb-2 flex items-center gap-2">
               <BarChart2 className="h-4 w-4" /> Crime Stats
             </h3>
-            <div className="space-y-2">
-              {crimeStats.map((stat, i) => (
-                <div key={i} className="bg-white/10 rounded-lg px-3 py-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">{stat.category}</span>
-                    <div className="flex items-center gap-2">
-                      {/* Mini bar in line */}
-                      <div className="relative pt-1 w-40">
-                        <div className="overflow-hidden h-1.5 text-xs flex rounded bg-gray-700">
-                          <div
-                            style={{ width: `${Math.min((stat.count / 100) * 100, 100)}%` }}
-                            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${stat.trend === "down" ? "bg-green-500" : "bg-red-500"}`}
-                          ></div>
+            {crimeStats.length > 0 ? (
+              <div className="space-y-2">
+                {crimeStats.map((stat, i) => (
+                  <div key={i} className="bg-white/10 rounded-lg px-3 py-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white">{stat.category}</span>
+                      <div className="flex items-center gap-2">
+                        {/* Mini bar in line */}
+                        <div className="relative pt-1 w-40">
+                          <div className="overflow-hidden h-1.5 text-xs flex rounded bg-gray-700">
+                            <div
+                              style={{ width: `${Math.min((stat.count / 100) * 100, 100)}%` }}
+                              className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${stat.trend === "down" ? "bg-green-500" : "bg-red-500"}`}
+                            ></div>
+                          </div>
                         </div>
+                        {/* end mini bar */}
+                        <span className="text-white font-medium">{stat.count}</span>
+                        <span className={`flex items-center text-sm ${stat.trend === "down" ? "text-green-400" : "text-red-400"}`}>
+                          {stat.trend === "down" ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                          {stat.percent}%
+                        </span>
                       </div>
-                      {/* end mini bar */}
-                      <span className="text-white font-medium">{stat.count}</span>
-                      <span className={`flex items-center text-sm ${stat.trend === "down" ? "text-green-400" : "text-red-400"}`}>
-                        {stat.trend === "down" ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
-                        {stat.percent}%
-                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-white/70">Loading crime statistics...</p>
+            )}
           </div>
 
           {/* RESOURCES DISPLAY */}
@@ -121,6 +166,7 @@ export default function MapSidebarDrawer({
             <h3 className="text-white font-semibold text-md mb-2 flex items-center gap-2">
               <Shield className="h-4 w-4" /> Nearby Resources
             </h3>
+            {resources.length > 0 ? (
             <ul className="space-y-2">
               {resources.map((r, i) => (
                 <li key={i} className="flex items-center gap-3">
@@ -132,12 +178,15 @@ export default function MapSidebarDrawer({
                 </li>
               ))}
             </ul>
+            ) : (
+              <p className="text-white/70">Loading nearby resources...</p>
+            )}
           </div>
 
           {/* link for full page report */}
           <Link
-            href={`/safety-report?location=${encodeURIComponent(location)}`}
-            className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full transition-colors"
+            href={`/safety-report/${location ? location.toLowerCase().replace(/[\s]+/g, "-") : ''}`}
+            className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
           >
             View Full Safety Report
           </Link>
