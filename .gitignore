@@ -17,6 +17,7 @@ env/
 *.pyc
 local_settings.py
 db.sqlite3
+migrations/
 
 # Node.js and React
 node_modules/

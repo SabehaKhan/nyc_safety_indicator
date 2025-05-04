@@ -1,11 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Lock, Eye, EyeOff, Globe, Moon, Sun, Save, Smartphone, Mail, Shield } from "lucide-react"
+import { useState } from "react";
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  Globe,
+  Moon,
+  Sun,
+  Save,
+  Smartphone,
+  Mail,
+  Shield,
+} from "lucide-react";
 
 export default function Settings() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [theme, setTheme] = useState("system")
+  const [showPassword, setShowPassword] = useState(false);
+  const [theme, setTheme] = useState("system");
 
   return (
     <div className="space-y-6">
@@ -20,13 +31,20 @@ export default function Settings() {
       {/* Account Settings */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Account Information</h3>
-          <p className="mt-1 text-sm text-gray-500">Update your account details and password.</p>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Account Information
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Update your account details and password.
+          </p>
         </div>
         <div className="px-4 py-5 sm:p-6 space-y-6">
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             <div className="sm:col-span-3">
-              <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="first-name"
+                className="block text-sm font-medium text-gray-700"
+              >
                 First name
               </label>
               <div className="mt-1">
@@ -41,7 +59,10 @@ export default function Settings() {
             </div>
 
             <div className="sm:col-span-3">
-              <label htmlFor="last-name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="last-name"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Last name
               </label>
               <div className="mt-1">
@@ -56,7 +77,10 @@ export default function Settings() {
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -74,7 +98,10 @@ export default function Settings() {
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Phone number
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -92,7 +119,10 @@ export default function Settings() {
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="current-password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Current password
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -112,14 +142,21 @@ export default function Settings() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-gray-400 hover:text-gray-500 focus:outline-none"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="new-password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 New password
               </label>
               <div className="mt-1">
@@ -134,7 +171,10 @@ export default function Settings() {
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Confirm new password
               </label>
               <div className="mt-1">
@@ -154,13 +194,19 @@ export default function Settings() {
       {/* Notification Settings */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Notification Settings</h3>
-          <p className="mt-1 text-sm text-gray-500">Manage how and when you receive notifications.</p>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Notification Settings
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage how and when you receive notifications.
+          </p>
         </div>
         <div className="px-4 py-5 sm:p-6">
           <div className="space-y-6">
             <div>
-              <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
+              <h4 className="text-sm font-medium text-gray-900">
+                Email Notifications
+              </h4>
               <div className="mt-2 space-y-4">
                 <div className="flex items-start">
                   <div className="flex items-center h-5">
@@ -173,11 +219,15 @@ export default function Settings() {
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="email-safety-alerts" className="font-medium text-gray-700">
+                    <label
+                      htmlFor="email-safety-alerts"
+                      className="font-medium text-gray-700"
+                    >
                       Safety Alerts
                     </label>
                     <p className="text-gray-500">
-                      Receive email notifications for safety alerts in your saved locations.
+                      Receive email notifications for safety alerts in your
+                      saved locations.
                     </p>
                   </div>
                 </div>
@@ -192,11 +242,15 @@ export default function Settings() {
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="email-account-updates" className="font-medium text-gray-700">
+                    <label
+                      htmlFor="email-account-updates"
+                      className="font-medium text-gray-700"
+                    >
                       Account Updates
                     </label>
                     <p className="text-gray-500">
-                      Receive email notifications about your account status and security updates.
+                      Receive email notifications about your account status and
+                      security updates.
                     </p>
                   </div>
                 </div>
@@ -211,17 +265,25 @@ export default function Settings() {
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="email-newsletters" className="font-medium text-gray-700">
+                    <label
+                      htmlFor="email-newsletters"
+                      className="font-medium text-gray-700"
+                    >
                       Newsletters and Tips
                     </label>
-                    <p className="text-gray-500">Receive periodic newsletters with safety tips and feature updates.</p>
+                    <p className="text-gray-500">
+                      Receive periodic newsletters with safety tips and feature
+                      updates.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-900">Push Notifications</h4>
+              <h4 className="text-sm font-medium text-gray-900">
+                Push Notifications
+              </h4>
               <div className="mt-2 space-y-4">
                 <div className="flex items-start">
                   <div className="flex items-center h-5">
@@ -234,11 +296,15 @@ export default function Settings() {
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="push-safety-alerts" className="font-medium text-gray-700">
+                    <label
+                      htmlFor="push-safety-alerts"
+                      className="font-medium text-gray-700"
+                    >
                       Safety Alerts
                     </label>
                     <p className="text-gray-500">
-                      Receive push notifications for safety alerts in your saved locations.
+                      Receive push notifications for safety alerts in your saved
+                      locations.
                     </p>
                   </div>
                 </div>
@@ -253,11 +319,15 @@ export default function Settings() {
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="push-emergency-alerts" className="font-medium text-gray-700">
+                    <label
+                      htmlFor="push-emergency-alerts"
+                      className="font-medium text-gray-700"
+                    >
                       Emergency Alerts
                     </label>
                     <p className="text-gray-500">
-                      Receive immediate push notifications for high-priority emergency alerts.
+                      Receive immediate push notifications for high-priority
+                      emergency alerts.
                     </p>
                   </div>
                 </div>
@@ -265,7 +335,9 @@ export default function Settings() {
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-900">SMS Notifications</h4>
+              <h4 className="text-sm font-medium text-gray-900">
+                SMS Notifications
+              </h4>
               <div className="mt-2 space-y-4">
                 <div className="flex items-start">
                   <div className="flex items-center h-5">
@@ -277,10 +349,16 @@ export default function Settings() {
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="sms-emergency-alerts" className="font-medium text-gray-700">
+                    <label
+                      htmlFor="sms-emergency-alerts"
+                      className="font-medium text-gray-700"
+                    >
                       Emergency Alerts Only
                     </label>
-                    <p className="text-gray-500">Receive SMS notifications only for high-priority emergency alerts.</p>
+                    <p className="text-gray-500">
+                      Receive SMS notifications only for high-priority emergency
+                      alerts.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -292,8 +370,12 @@ export default function Settings() {
       {/* Appearance Settings */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Appearance</h3>
-          <p className="mt-1 text-sm text-gray-500">Customize how GeoSafe Hub looks for you.</p>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Appearance
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Customize how GeoSafe Hub looks for you.
+          </p>
         </div>
         <div className="px-4 py-5 sm:p-6">
           <div className="space-y-4">
@@ -345,8 +427,12 @@ export default function Settings() {
       {/* Privacy Settings */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Privacy Settings</h3>
-          <p className="mt-1 text-sm text-gray-500">Manage your privacy and data sharing preferences.</p>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Privacy Settings
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage your privacy and data sharing preferences.
+          </p>
         </div>
         <div className="px-4 py-5 sm:p-6">
           <div className="space-y-4">
@@ -361,11 +447,15 @@ export default function Settings() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="location-tracking" className="font-medium text-gray-700">
+                <label
+                  htmlFor="location-tracking"
+                  className="font-medium text-gray-700"
+                >
                   Location Tracking
                 </label>
                 <p className="text-gray-500">
-                  Allow GeoSafe Hub to track your location to provide real-time safety alerts.
+                  Allow GeoSafe Hub to track your location to provide real-time
+                  safety alerts.
                 </p>
               </div>
             </div>
@@ -380,11 +470,15 @@ export default function Settings() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="data-collection" className="font-medium text-gray-700">
+                <label
+                  htmlFor="data-collection"
+                  className="font-medium text-gray-700"
+                >
                   Data Collection
                 </label>
                 <p className="text-gray-500">
-                  Allow GeoSafe Hub to collect anonymous usage data to improve our services.
+                  Allow GeoSafe Hub to collect anonymous usage data to improve
+                  our services.
                 </p>
               </div>
             </div>
@@ -398,10 +492,16 @@ export default function Settings() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="third-party-sharing" className="font-medium text-gray-700">
+                <label
+                  htmlFor="third-party-sharing"
+                  className="font-medium text-gray-700"
+                >
                   Third-Party Data Sharing
                 </label>
-                <p className="text-gray-500">Allow GeoSafe Hub to share your data with trusted third-party partners.</p>
+                <p className="text-gray-500">
+                  Allow GeoSafe Hub to share your data with trusted third-party
+                  partners.
+                </p>
               </div>
             </div>
           </div>
@@ -417,8 +517,12 @@ export default function Settings() {
       {/* Account Actions */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Account Actions</h3>
-          <p className="mt-1 text-sm text-gray-500">Manage your account status.</p>
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            Account Actions
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage your account status.
+          </p>
         </div>
         <div className="px-4 py-5 sm:p-6">
           <div className="space-y-4">
@@ -432,7 +536,5 @@ export default function Settings() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
-

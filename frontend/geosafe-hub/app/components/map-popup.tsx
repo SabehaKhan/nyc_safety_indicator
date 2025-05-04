@@ -95,4 +95,3 @@ export default function MapPopup({ onClose }: MapPopupProps) {
     </div>
   )
 }
-

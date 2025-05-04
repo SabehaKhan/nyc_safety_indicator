@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
@@ -52,5 +53,8 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
-    class Meta:
-        app_label = 'users'  # ✅ Explicit app label
+class EmergencyContact(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='emergency_contacts')
+    name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15, unique=True,  default='000-000-0000')  
+    carrier = models.CharField(max_length=25, unique= False,default="Unknown")

@@ -1,69 +1,151 @@
-"use client"
-
-import Link from "next/link"
-import Image from "next/image"
+"use client";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   Shield,
   MapPin,
-  BarChart2,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
   ChevronDown,
-} from "lucide-react"
-import { useState } from "react"
-import Footer from "../components/footer"
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation"
+import Footer from "..//components/footer";
+import ReviewList from "..//components/review-list";
+import CrimeChartSection from "..//components/CrimeStats";
+import SearchBar from "..//components/SearchBar";
+import AxiosInstanceAny from "@/components/AxiosInstanceAny";
+import Axios from "axios";
+const reverseGeocode = async (latitude: number, longitude: number) => {
+  try {
+    const response = await Axios.get(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+    );
+    return response.data.address.neighbourhood || response.data.address.suburb || response.data.address.city;
+  } catch (error) {
+    console.error("Reverse geocoding failed:", error);
+    return null;
+  }
+};
+
+
+// Function to determine current neighborhood
+const getCurrentNeighborhood = (callback: (neighborhood: string | null) => void) => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const neighborhood = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        callback(neighborhood);
+      },
+      () => callback(null) // Fallback if geolocation fails
+    );
+  } else {
+    callback(null);
+  }
+};
+
 
 export default function SafetyReportPage() {
-  // State for selected location
-  const [selectedLocation, setSelectedLocation] = useState("Manhattan")
-  const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  // NYC locations data
-  const nycLocations = {
-    boroughs: ["Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island"],
-    neighborhoods: {
-      Manhattan: ["Upper East Side", "Harlem", "Chelsea", "Greenwich Village", "Midtown"],
-      Brooklyn: ["Williamsburg", "DUMBO", "Bay Ridge", "Park Slope", "Bedford-Stuyvesant"],
-      Queens: ["Astoria", "Long Island City", "Flushing", "Jamaica", "Forest Hills"],
-      Bronx: ["Riverdale", "Fordham", "Pelham Bay", "Mott Haven", "Concourse"],
-      "Staten Island": ["St. George", "Tottenville", "Great Kills", "New Dorp", "West Brighton"],
-    },
-  }
+  const { neighborhood } = useParams(); //dynamic segment
 
-  // Flatten all locations for the dropdown
-  const allLocations = [...nycLocations.boroughs, ...Object.values(nycLocations.neighborhoods).flat()]
+   // NYC locations data
+   const nycLocations = 
+   {"boroughs":["Bronx","Brooklyn","Manhattan","Queens","Staten Island"],
+   neighborhoods:{
+   "Bronx":["Allerton","Bedford Park","Belmont","Bronx Park","Castle Hill-Unionport","Claremont Park","Claremont Village-Claremont East","Concourse-Concourse Village","Co-op City","Crotona Park","Crotona Park East","Eastchester-Edenwald-Baychester","Ferry Point Park-St. Raymond Cemetery","Fordham Heights","Highbridge","Hunts Point","Hutchinson Metro Center","Kingsbridge Heights-Van Cortlandt Village","Kingsbridge-Marble Hill","Longwood","Melrose","Morrisania","Morris Park","Mott Haven-Port Morris","Mount Eden-Claremont West","Mount Hope","Norwood","Parkchester","Pelham Bay-Country Club-City Island","Pelham Bay Park","Pelham Gardens","Pelham Parkway-Van Nest","Rikers Island","Riverdale-Spuyten Duyvil","Soundview-Bruckner-Bronx River","Soundview-Clason Point","Soundview Park","Throgs Neck-Schuylerville","Tremont","University Heights North-Fordham","University Heights South-Morris Heights","Van Cortlandt Park","Wakefield-Woodlawn","Westchester Square","West Farms","Williamsbridge-Olinville","Woodlawn Cemetery","Yankee Stadium-Macombs Dam Park"],
+   "Brooklyn":["Barren Island-Floyd Bennett Field","Bath Beach","Bay Ridge","Bedford-Stuyvesant East","Bedford-Stuyvesant West","Bensonhurst","Borough Park","Brighton Beach","Brooklyn Heights","Brooklyn Navy Yard","Brownsville","Bushwick East","Bushwick West","Canarsie","Canarsie Park & Pier","Carroll Gardens-Cobble Hill-Gowanus-Red Hook","Clinton Hill","Coney Island-Sea Gate","Crown Heights North","Crown Heights South","Cypress Hills","Downtown Brooklyn-DUMBO-Boerum Hill","Dyker Beach Park","Dyker Heights","East Flatbush-Erasmus","East Flatbush-Farragut","East Flatbush-Remsen Village","East Flatbush-Rugby","East New York-City Line","East New York-New Lots","East New York North","East Williamsburg","Flatbush","Flatbush West-Ditmas Park-Parkville","Flatlands","Fort Greene","Fort Hamilton","Gravesend East-Homecrest","Gravesend South","Gravesend West","Greenpoint","Green-Wood Cemetery","Highland Park-Cypress Hills Cemeteries South","Holy Cross Cemetery","Kensington","Lincoln Terrace Park","Madison","Mapleton-Midwood West","Marine Park-Mill Basin-Bergen Beach","Marine Park-Plumb Island","McGuire Fields","Midwood","Ocean Hill","Park Slope","Prospect Heights","Prospect Lefferts Gardens-Wingate","Prospect Park","Sheepshead Bay-Manhattan Beach-Gerritsen Beach","South Williamsburg","Spring Creek-Starrett City","Sunset Park Central","Sunset Park East-Borough Park West","Sunset Park West","The Evergreens Cemetery","Williamsburg","Windsor Terrace-South Slope"],
+   "Manhattan":["Central Park","Chelsea-Hudson Yards","Chinatown-Two Bridges","East Harlem North","East Harlem South","East Midtown-Turtle Bay","East Village","F","Financial District-Battery Park City","Gramercy","Greenwich Village","Hamilton Heights-Sugar Hill","Harlem North","Harlem South","Hell's Kitchen","Highbridge Park","Inwood","Inwood Hill Park","Lower East Side","Manhattanville-West Harlem","Midtown South-Flatiron-Union Square","Midtown-Times Square","Morningside Heights","Murray Hill-Kips Bay","Randall's Island","SoHo-Little Italy-Hudson Square","Stuyvesant Town-Peter Cooper Village","The Battery-Governors Island-Ellis Island-Liberty Island","Tribeca-Civic Center","United Nations","Upper East Side-Carnegie Hill","Upper East Side-Lenox Hill-Roosevelt Island","Upper East Side-Yorkville","Upper West Side Central","Upper West Side-Lincoln Square","Upper West Side-Manhattan Valley","Washington Heights North","Washington Heights South","West Village"],
+   "Queens":["Alley Pond Park","Astoria Central","Astoria East-Woodside North","Astoria North-Ditmars-Steinway","Astoria Park","Auburndale","Baisley Park","Bayside","Bay Terrace-Clearview","Bellerose","Breezy Point-Belle Harbor-Rockaway Park-Broad Channel","Calvary & Mount Zion Cemeteries","Cambria Heights","College Point","Corona","Cunningham Park","Douglaston-Little Neck","East Elmhurst","East Flushing","Elmhurst","Far Rockaway-Bayswater","Flushing Meadows-Corona Park","Flushing-Willets Point","Forest Hills","Forest Park","Fresh Meadows-Utopia","Glendale","Glen Oaks-Floral Park-New Hyde Park","Highland Park-Cypress Hills Cemeteries North","Hollis","Howard Beach-Lindenwood","Jackson Heights","Jacob Riis Park-Fort Tilden-Breezy Point Tip","Jamaica","Jamaica Bay East","Jamaica Estates-Holliswood","Jamaica Hills-Briarwood","John F. Kennedy International Airport","Kew Gardens","Kew Gardens Hills","Kissena Park","LaGuardia Airport","Laurelton","Long Island City-Hunters Point","Maspeth","Middle Village","Middle Village Cemetery","Mount Olivet & All Faiths Cemeteries","Murray Hill-Broadway Flushing","North Corona","Oakland Gardens-Hollis Hills","Old Astoria-Hallets Point","Ozone Park","Ozone Park North","Pomonok-Electchester-Hillcrest","Queensboro Hill","Queensbridge-Ravenswood-Dutch Kills","Queens Village","Rego Park","Richmond Hill","Ridgewood","Rockaway Beach-Arverne-Edgemere","Rockaway Community Park","Rosedale","South Jamaica","South Ozone Park","South Richmond Hill","Springfield Gardens North-Rochdale Village","Springfield Gardens South-Brookville","St. Albans","St. John Cemetery","St. Michael's Cemetery","Sunnyside","Sunnyside Yards North","Sunnyside Yards South","Whitestone-Beechhurst","Woodhaven","Woodside"],
+   "Staten Island":["Annadale-Huguenot-Prince's Bay-Woodrow","Arden Heights-Rossville","Fort Wadsworth","Freshkills Park North","Freshkills Park South","Grasmere-Arrochar-South Beach-Dongan Hills","Great Kills-Eltingville","Great Kills Park","Mariner's Harbor-Arlington-Graniteville","Miller Field","New Dorp-Midland Beach","New Springville-Willowbrook-Bulls Head-Travis","Oakwood-Richmondtown","Port Richmond","Rosebank-Shore Acres-Park Hill","Snug Harbor","St. George-New Brighton","Todt Hill-Emerson Hill-Lighthouse Hill-Manor Heights","Tompkinsville-Stapleton-Clifton-Fox Hills","Tottenville-Charleston","Westerleigh-Castleton Corners","West New Brighton-Silver Lake-Grymes Hill"]}
+ }
+ 
 
-  // Mock data for the safety report - would be dynamic based on selected location
-  const safetyScores = {
-    Manhattan: 73,
-    Brooklyn: 68,
-    Queens: 71,
-    Bronx: 62,
-    "Staten Island": 78,
-    "Upper East Side": 82,
-    Harlem: 65,
-    "Bay Ridge": 76,
-    // Add more locations as needed
-  }
+  type LocationType =
+    | typeof nycLocations.boroughs[number]
+    | keyof typeof nycLocations.neighborhoods;
+  const searchParams = useSearchParams();
+  const location = searchParams.get("location");
+  const [selectedLocation, setSelectedLocation] = useState<LocationType>(
+    location ? (location as LocationType) : "Brownsville"
+  );
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // For search in dropdown
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([]); // For dropdown search
+  const [safetyScore, setSafetyScore] = useState(70);
+  const [showSeriousCrimes, setShowSeriousCrimes] = useState(false);
+  const [selectedCrime, setSelectedCrime] = useState("Theft");
 
-  const safetyScore = safetyScores[selectedLocation] || 70 // Default score if not found
-  const lastUpdated = "Today at 9:45 AM"
+  // Flatten array for dropdown
+  const allLocations = [...Object.values(nycLocations.neighborhoods).flat()];
 
-  const crimeStats = [
-    { category: "Theft", count: 127, trend: "down", percent: 12 },
-    { category: "Assault", count: 43, trend: "up", percent: 5 },
-    { category: "Burglary", count: 62, trend: "down", percent: 8 },
-    { category: "Vehicle Crime", count: 89, trend: "down", percent: 15 },
-  ]
+  // Determine boroname from ntaname
+  const getBoronameFromNtaname = (ntaname: string): string | null => {
+    for (const [borough, neighborhoods] of Object.entries(nycLocations.neighborhoods)) {
+      if (neighborhoods.includes(ntaname)) {
+        return borough;
+      }
+    }
+    return null;
+  };
 
-  const safetyTips = [
-    "Stay aware of your surroundings, especially at night",
-    "Keep valuables out of sight when walking in public",
-    "Use well-lit and populated streets when possible",
-    "Report suspicious activity to local authorities",
-  ]
+  // Fetch safety score
+  const fetchSafetyScore = async (location: string) => {
+    if (!location) {
+      console.error("No location provided for fetching safety score.");
+      return;
+    }
+
+    let params = {};
+
+    if (nycLocations.boroughs.includes(location)) {
+      params = { boroname: location };
+    } else if (allLocations.includes(location)) {
+      params = { ntaname: location };
+    } else {
+      console.error("Invalid location provided:", location);
+      return;
+    }
+
+    try {
+      const response = await AxiosInstanceAny.get("/safety/safety-score/", {
+        params,
+      });
+      setSafetyScore(response.data.safety_score || 70);
+    } catch (error: any) {
+      console.error("Failed to fetch safety score:", error.response?.data || error.message);
+      setSafetyScore(70);
+    }
+  };
+
+  // Handle location selection
+  const handleLocationSelect = (location: string) => {
+    setSelectedLocation(location as LocationType);
+    setDropdownOpen(false);
+    setSearchQuery(""); // Clear the search query
+    fetchSafetyScore(location); // Fetch the safety score for the selected location
+  };
+
+  // Filter locations based on search query
+  useEffect(() => {
+    const results = allLocations.filter((location) =>
+      location.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredLocations(results);
+  }, [searchQuery]);
+
+  // Fetch safety score for the default location on initial render
+  useEffect(() => {
+      fetchSafetyScore(selectedLocation);
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  const boroname = nycLocations.boroughs.includes(selectedLocation)
+    ? selectedLocation
+    : getBoronameFromNtaname(selectedLocation);
+
+  const lastUpdated = "Today at 09:45";
+
+  const router = useRouter();
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -77,10 +159,10 @@ export default function SafetyReportPage() {
           priority
           quality={100}
         />
-        {/* Overlay to ensure text readability */}
         <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px]" />
       </div>
 
+      {/* Header */}
       <header className="container mx-auto px-4 py-4 flex items-center justify-between relative z-10 bg-blue-900/50 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -93,88 +175,31 @@ export default function SafetyReportPage() {
           <h1 className="text-3xl font-bold text-white">GeoSafe Hub</h1>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="px-4 py-2 border border-white/30 rounded-full text-white hover:bg-white/10 transition-colors backdrop-blur-sm"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2 inline" />
-            Back to Home
-          </Link>
-        </div>
+        <Link
+          href="/"
+          className="px-4 py-2 border border-white/30 rounded-full text-white hover:bg-white/10 transition-colors backdrop-blur-sm"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2 inline" />
+          Back to Home
+        </Link>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1 relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 shadow-xl mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-white">Safety Report</h1>
-
-                {/* Location Selector */}
-                <div className="relative mt-2">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-2 text-white hover:bg-white/20 transition-colors"
-                  >
-                    <MapPin className="h-5 w-5" />
-                    <span>{selectedLocation}</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute z-10 mt-1 w-64 max-h-96 overflow-y-auto bg-black/40 backdrop-blur-md border border-white/30 rounded-lg shadow-lg">
-                      <div className="p-2">
-                        <input
-                          type="text"
-                          placeholder="Search locations..."
-                          className="w-full px-3 py-2 bg-black/30 border border-white/30 rounded-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div className="p-2">
-                        <div className="text-white text-xs font-semibold uppercase px-2 py-1 bg-blue-900/50">
-                          Boroughs
-                        </div>
-                        {nycLocations.boroughs.map((borough) => (
-                          <button
-                            key={borough}
-                            onClick={() => {
-                              setSelectedLocation(borough)
-                              setDropdownOpen(false)
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded-md ${selectedLocation === borough ? "bg-blue-500 text-white font-medium" : "text-white hover:bg-white/20"}`}
-                          >
-                            {borough}
-                          </button>
-                        ))}
-                      </div>
-
-                      {Object.entries(nycLocations.neighborhoods).map(([borough, neighborhoods]) => (
-                        <div key={borough} className="p-2 border-t border-white/20">
-                          <div className="text-white text-xs font-semibold uppercase px-2 py-1 bg-blue-900/50">
-                            {borough} Neighborhoods
-                          </div>
-                          {neighborhoods.map((neighborhood) => (
-                            <button
-                              key={neighborhood}
-                              onClick={() => {
-                                setSelectedLocation(neighborhood)
-                                setDropdownOpen(false)
-                              }}
-                              className={`w-full text-left px-3 py-2 rounded-md ${selectedLocation === neighborhood ? "bg-blue-500/50 text-white" : "text-white/90 hover:bg-white/10"}`}
-                            >
-                              {neighborhood}
-                            </button>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <h1 className="text-3xl font-bold text-white">
+                  {selectedLocation} Safety Report
+                </h1>
+                <div className="relative mt-2 w-full">
+                  <SearchBar />
                 </div>
               </div>
+
               <div className="mt-4 md:mt-0 flex items-center">
-                <div className="w-20 h-20 bg-blue-500/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-white">{safetyScore}</div>
                     <div className="text-xs text-blue-100">Safety Score</div>
@@ -182,9 +207,19 @@ export default function SafetyReportPage() {
                 </div>
                 <div className="ml-4">
                   <div
-                    className={`text-sm font-medium ${safetyScore > 70 ? "text-green-400" : safetyScore > 40 ? "text-yellow-400" : "text-red-400"}`}
+                    className={`text-sm font-medium ${
+                      safetyScore > 70
+                        ? "text-green-400"
+                        : safetyScore > 40
+                        ? "text-yellow-400"
+                        : "text-red-400"
+                    }`}
                   >
-                    {safetyScore > 70 ? "Low Risk" : safetyScore > 40 ? "Moderate Risk" : "High Risk"}
+                    {safetyScore > 70
+                      ? "Low Risk"
+                      : safetyScore > 40
+                      ? "Moderate Risk"
+                      : "High Risk"}
                   </div>
                   <div className="text-xs text-blue-100 mt-1">Last updated: {lastUpdated}</div>
                 </div>
@@ -192,11 +227,11 @@ export default function SafetyReportPage() {
             </div>
 
             <div className="relative pt-1 mb-6">
-              <div className="overflow-hidden h-2 text-xs flex rounded bg-gray-700">
+              <div className="overflow-hidden h-2 rounded bg-gray-700">
                 <div
                   style={{ width: `${safetyScore}%` }}
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
-                ></div>
+                  className="bg-blue-500 h-full"
+                />
               </div>
               <div className="mt-2 flex justify-between text-xs text-blue-100">
                 <span>0 - High Risk</span>
@@ -205,110 +240,28 @@ export default function SafetyReportPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
-                  <BarChart2 className="h-5 w-5 mr-2" />
-                  Crime Statistics for {selectedLocation}
-                </h2>
-                <div className="space-y-3">
-                  {crimeStats.map((stat, index) => (
-                    <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-white">{stat.category}</span>
-                        <div className="flex items-center">
-                          <span className="text-white font-medium mr-2">{stat.count}</span>
-                          <div
-                            className={`flex items-center ${stat.trend === "down" ? "text-green-400" : "text-red-400"}`}
-                          >
-                            {stat.trend === "down" ? (
-                              <TrendingDown className="h-4 w-4 mr-1" />
-                            ) : (
-                              <TrendingUp className="h-4 w-4 mr-1" />
-                            )}
-                            <span>{stat.percent}%</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 relative pt-1">
-                        <div className="overflow-hidden h-1.5 text-xs flex rounded bg-gray-700">
-                          <div
-                            style={{ width: `${(stat.count / 150) * 100}%` }}
-                            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${stat.trend === "down" ? "bg-green-500" : "bg-red-500"}`}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
-                  <Shield className="h-5 w-5 mr-2" />
-                  Safety Tips for {selectedLocation}
-                </h2>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <ul className="space-y-3">
-                    {safetyTips.map((tip, index) => (
-                      <li key={index} className="flex items-start">
-                        <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="text-blue-100">{tip}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-6">
-                  <h2 className="text-xl font-semibold text-white mb-4">Nearby Resources in {selectedLocation}</h2>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-start">
-                        <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                          <MapPin className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">Police Station</p>
-                          <p className="text-blue-100 text-sm">0.8 miles away</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                          <MapPin className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">Hospital</p>
-                          <p className="text-blue-100 text-sm">1.2 miles away</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                          <MapPin className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">Fire Station</p>
-                          <p className="text-blue-100 text-sm">0.5 miles away</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="mb-8">
+              <CrimeChartSection
+                ntaname={selectedLocation}
+                showSeriousCrimes={showSeriousCrimes}
+                setShowSeriousCrimes={setShowSeriousCrimes}
+                selectedCrime={selectedCrime}
+                setSelectedCrime={setSelectedCrime}
+              />
             </div>
-          </div>
 
-          <div className="text-center">
-            <Link
-              href="/"
-              className="px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors inline-block"
-            >
-              Return to Home
-            </Link>
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold text-white mb-4">
+                <Shield className="inline-block h-5 w-5 mr-2" />
+                Community Reviews
+              </h2>
+              <ReviewList ntaname={selectedLocation} boroname={boroname || ""} />
+            </div>
           </div>
         </div>
       </main>
 
       <Footer />
     </div>
-  )
+  );
 }

@@ -1,15 +1,28 @@
-// Mechanism to send data from backend to frontend and other way around
-import axios, { AxiosInstance as AxiosInstanceType } from "axios";
+import axios from "axios";
 
-const baseURL = "http://127.0.0.1:8000/api";
-
-const AxiosInstance: AxiosInstanceType = axios.create({
-  baseURL: baseURL,
-  timeout: 5000,
+const AxiosInstance = axios.create({
+  baseURL:
+    `${process.env.NEXT_PUBLIC_BASE_API_URL}/api` ||
+    "http://localhost:8000/api",
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-    accept: "application/json",
+    Accept: "application/json",
   },
 });
+
+// Add a request interceptor to include the auth token in requests
+AxiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export default AxiosInstance;

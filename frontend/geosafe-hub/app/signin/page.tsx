@@ -15,7 +15,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  
+
   const handleGoogleLogin = async (response: { credential: any }) => {
     try {
       // Send the Google token along with the user's information to the backend
@@ -28,7 +28,7 @@ export default function SignIn() {
       const google_full_name = `${first_name_google_client} ${last_name_google_client}`;
       // Assuming the backend sends user info, save the auth tokens
       localStorage.setItem("authToken", res.data.access);
-      localStorage.setItem("refreshToken", res.data.refresh_token);
+      localStorage.setItem("refreshToken", res.data.refresh);
 
       // Redirect user to the home page
       login(google_email, "", google_full_name);
@@ -52,7 +52,8 @@ export default function SignIn() {
       if (response.data.access) {
         // Store the access token and refresh token in localStorage
         localStorage.setItem("authToken", response.data.access);
-        localStorage.setItem("refreshToken", response.data.refresh_token);
+        localStorage.setItem("refreshToken", response.data.Refresh);
+
         console.log("successful login");
         await login(email, password);
 
