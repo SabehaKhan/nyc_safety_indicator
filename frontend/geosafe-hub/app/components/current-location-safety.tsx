@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import AxiosInstanceAny from "@/components/AxiosInstanceAny";
 import AxiosInstance from "@/components/AxiosInstance";
 
-
 type LocationData = {
   latitude: number;
   longitude: number;
@@ -41,12 +40,10 @@ export default function CurrentLocationSafety() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Safety score from API
   const [safetyScoreData, setSafetyScoreData] =
     useState<SafetyScoreData | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  // Function to refresh access token
   const refreshAccessToken = async () => {
     try {
       const refreshToken = localStorage.getItem("refreshToken");
@@ -63,15 +60,12 @@ export default function CurrentLocationSafety() {
     }
   };
 
-  // Get token on component mount
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
     setToken(storedToken);
   }, []);
 
-  // Check if we're in a secure context and automatically use location without asking again
   useEffect(() => {
-    // Check for secure context
     if (typeof window !== "undefined" && window.isSecureContext === false) {
       setPermissionStatus("insecure_context");
       setError(
@@ -81,12 +75,10 @@ export default function CurrentLocationSafety() {
       return;
     }
 
-    // Automatically get location on page load/refresh without asking again
     if (navigator.geolocation) {
       setIsLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // Success - we have the location
           setPermissionStatus("granted");
           const newLocationData = {
             latitude: position.coords.latitude,
@@ -96,23 +88,18 @@ export default function CurrentLocationSafety() {
           };
 
           setLocationData(newLocationData);
-
-          // Get address and neighborhood from coordinates
           fetchAddressAndNeighborhood(
             position.coords.latitude,
             position.coords.longitude
           );
-
-          // Get safety score
           fetchSafetyScoreFromAPI(
             position.coords.latitude,
-            position.coords.longitude
+            position.coords.longitude,
+            null
           );
-
           setIsLoading(false);
         },
         (error) => {
-          // Error - user hasn't granted permission or other error
           console.error("Geolocation error:", error);
           setPermissionStatus("not_asked");
           setIsLoading(false);
@@ -121,12 +108,10 @@ export default function CurrentLocationSafety() {
     }
   }, []);
 
-  // Function to request location permission and get coordinates
   const requestLocationPermission = () => {
     setIsLoading(true);
     setError(null);
 
-    // Check if geolocation is supported
     if (!navigator.geolocation) {
       setPermissionStatus("unavailable");
       setError(
@@ -137,11 +122,9 @@ export default function CurrentLocationSafety() {
       return;
     }
 
-    // Try to get the current position
     try {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // Success callback
           setPermissionStatus("granted");
           const newLocationData = {
             latitude: position.coords.latitude,
@@ -151,54 +134,22 @@ export default function CurrentLocationSafety() {
           };
 
           setLocationData(newLocationData);
-
-          // Get address and neighborhood from coordinates using reverse geocoding
           fetchAddressAndNeighborhood(
             position.coords.latitude,
             position.coords.longitude
           );
-
-          // Get safety score for this location from API
           fetchSafetyScoreFromAPI(
             position.coords.latitude,
-            position.coords.longitude
+            position.coords.longitude,
+            null
           );
-
           setIsLoading(false);
         },
         (geoError) => {
-          // Error callback
           console.error("Geolocation error:", geoError.code, geoError.message);
           setPermissionStatus("denied");
-
-          // Handle specific error codes
-          if (geoError.code === 1) {
-            // Permission denied
-            setError("Location access was denied. Using demo mode instead.");
-          } else if (geoError.code === 2) {
-            // Position unavailable
-            setError(
-              "Unable to determine your location. Using demo mode instead."
-            );
-          } else if (geoError.code === 3) {
-            // Timeout
-            setError("Location request timed out. Using demo mode instead.");
-          } else {
-            // Other errors
-            setError(
-              "An error occurred while getting your location. Using demo mode instead."
-            );
-          }
-
           setIsLoading(false);
-          // Load demo data after a short delay
           setTimeout(() => loadDemoLocation(), 500);
-        },
-        // Options
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000,
         }
       );
     } catch (error) {
@@ -210,16 +161,12 @@ export default function CurrentLocationSafety() {
     }
   };
 
-  // Function to fetch address and neighborhood using reverse geocoding
   const fetchAddressAndNeighborhood = async (
     latitude: number,
     longitude: number
   ) => {
     try {
-      // Use OpenStreetMap's Nominatim for reverse geocoding (free, no API key required)
       const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
-
-      // Make the request with a custom User-Agent as required by Nominatim's ToS
       const response = await fetch(url, {
         headers: { "User-Agent": "SafetyApp/1.0" },
       });
@@ -229,23 +176,13 @@ export default function CurrentLocationSafety() {
       }
 
       const data = await response.json();
-      console.log("Geocoding response:", data);
-
-      // Extract address components
       const addressObj = data.address || {};
-
-      // Try different fields that might contain neighborhood info
-      // Different regions have different address formats in OSM
       const neighborhood =
         addressObj.neighbourhood ||
         addressObj.suburb ||
         addressObj.district ||
-        addressObj.quarter ||
-        addressObj.city_district ||
-        addressObj.town ||
         "Unknown Area";
 
-      // Format full address
       const city =
         addressObj.city || addressObj.town || addressObj.village || "";
       const state = addressObj.state || "";
@@ -253,10 +190,6 @@ export default function CurrentLocationSafety() {
         .filter(Boolean)
         .join(", ");
 
-      console.log("Determined neighborhood:", neighborhood);
-      console.log("Formatted address:", formattedAddress);
-
-      // Update location data with address info
       const updatedLocationData = {
         ...(locationData || { latitude, longitude }),
         address: formattedAddress,
@@ -264,48 +197,41 @@ export default function CurrentLocationSafety() {
       };
 
       setLocationData(updatedLocationData);
-
-      // Now that we have the neighborhood, send it along with coordinates to the safety API
-      fetchSafetyScoreFromAPI(latitude, longitude);
+      fetchSafetyScoreFromAPI(latitude, longitude, neighborhood);
     } catch (error) {
       console.error("Error fetching address and neighborhood:", error);
       setError(
         "Unable to determine your exact location. Showing approximate safety data."
       );
-
-      // Fall back to approximate method if geocoding fails
       fetchSafetyScoreFromAPI(latitude, longitude);
     }
   };
 
-  // Function to fetch safety score from API
-const [alertSent, setAlertSent] = useState(false); // Add this at the top of your component
+  const fetchSafetyScoreFromAPI = async (
+    latitude: number,
+    longitude: number,
+    neighborhood: string | null = null
+  ) => {
+    try {
+      const response = await AxiosInstanceAny.get(`/safety/safety-score/`, {
+        params: {
+          latitude: latitude,
+          longitude: longitude,
+        },
+      });
 
-const fetchSafetyScoreFromAPI = async (latitude: number, longitude: number) => {
-  try {
-    const response = await AxiosInstanceAny.get(`/safety/safety-score/`, {
-      params: {
-        latitude: latitude,
-        longitude: longitude,
-      },
-    });
+      setSafetyScoreData({
+        score: response.data.safety_score,
+        ...response.data,
+      });
 
-    console.log("Safety Score API response:", response.data);
-
-    setSafetyScoreData({
-      score: response.data.safety_score,
-      ...response.data,
-    });
-
-    if (response.data.safety_score < 40 && !alertSent) {
-      console.log("Safety score is low, sending emergency alert...");
-      try {
+      if (response.data.safety_score < 30) {
         let authToken = token || (await refreshAccessToken());
         if (!authToken) return;
 
         await AxiosInstance.post(
           "/emergency/sendAlert/",
-          { location: locationData?.address || "Unknown" },
+          { location: neighborhood || "Unknown" },
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
@@ -313,20 +239,13 @@ const fetchSafetyScoreFromAPI = async (latitude: number, longitude: number) => {
             },
           }
         );
-        setAlertSent(true);
-      } catch (error) {
-        console.error("Error sending alert:", error);
       }
+    } catch (error) {
+      console.error("Error fetching safety score from API:", error);
     }
-  } catch (error) {
-    console.error("Error fetching safety score from API:", error);
-  }
-};
+  };
 
-
-  // Function to load demo location data
   const loadDemoLocation = () => {
-    // Set demo location data (New York City)
     const demoLocationData = {
       latitude: 40.7128,
       longitude: -74.006,
@@ -335,18 +254,11 @@ const fetchSafetyScoreFromAPI = async (latitude: number, longitude: number) => {
     };
 
     setLocationData(demoLocationData);
-
-    // Fetch demo safety score from API first
     fetchSafetyScoreFromAPI(40.7128, -74.006);
-
-    // Update permission status to show the data
     setPermissionStatus("granted");
-
-    // Add a note that this is demo data
     setError("Showing demo data for Manhattan, New York.");
   };
 
-  // View detailed safety report for this location
   const viewSafetyReport = () => {
     if (locationData?.neighborhood) {
       router.push(
@@ -357,7 +269,6 @@ const fetchSafetyScoreFromAPI = async (latitude: number, longitude: number) => {
     }
   };
 
-  // Get safety level text and color based on score
   const getSafetyLevel = (score: number) => {
     if (score >= 70) return { text: "Low Risk", color: "text-green-400" };
     if (score >= 40) return { text: "Moderate Risk", color: "text-yellow-400" };
@@ -367,9 +278,14 @@ const fetchSafetyScoreFromAPI = async (latitude: number, longitude: number) => {
   return (
     <div className="max-w-3xl mx-auto mb-12">
       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 shadow-lg">
-        <h3 className="text-xl font-bold text-white mb-4">
-          Your Location Safety
-        </h3>
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-white mb-1 tracking-wide">
+            Your Location Safety Score
+          </h3>
+          <span className="text-sm text-gray-300 italic mt-[-4px]">
+            Covering a 0.4-mile radius
+          </span>
+        </div>
 
         {permissionStatus === "not_asked" && (
           <div className="text-center py-4">
