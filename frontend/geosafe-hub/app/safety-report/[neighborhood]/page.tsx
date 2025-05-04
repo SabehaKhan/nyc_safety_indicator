@@ -49,12 +49,18 @@ export default function SafetyReportPage() {
   const [selectedCrime, setSelectedCrime] = useState("Theft");
   const [notFound, setNotFound] = useState(false);
 
-    // Function to convert slug back to title case neighborhood name
+  //convert slug back to title case neighborhood name
   const getTitleCaseNeighborhood = (slug: string): string | null => {
     if (!slug) return null;
-    const lowercaseWithSpaces = slug.replace(/-/g, ' ').toLowerCase();
-    return allLocations.find(location => location.toLowerCase() === lowercaseWithSpaces) || null;
+    const lowercaseWithSpacesFromSlug = slug.replace(/-/g, ' ').toLowerCase();
+    const normalizedSlug = lowercaseWithSpacesFromSlug.replace(/[\s-]/g, '');
+  
+    return allLocations.find(location => {
+      const normalizedLocation = location.toLowerCase().replace(/[\s-]/g, '');
+      return normalizedLocation === normalizedSlug;
+    }) || null;
   };
+  
 
   // Determine boroname from ntaname
   const getBoronameFromNtaname = (ntaname: string): string | null => {
