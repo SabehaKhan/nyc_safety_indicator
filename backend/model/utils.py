@@ -123,14 +123,19 @@ def get_top_crimes_in_neighborhood(neighborhood_name):
     df = get_crime_data()
     crimes_in_neighborhood = df[df['ntaname'] == neighborhood_name]
     top_crimes_neighborhood = crimes_in_neighborhood['ofns_desc'].value_counts().head(5)
-    return top_crimes_neighborhood
+    return top_crimes_neighborhood.to_dict()
 
 #Task 2
 def get_top_felony_crimes_in_neighborhood(neighborhood_name):
     df = get_crime_data()
+    # Filter for felony crimes in the specified neighborhood
     felony_crimes_neighborhood = df[(df['law_cat_cd'] == 'F') & (df['ntaname'] == neighborhood_name)]
+    
+    # Get the top 5 felony crimes and their counts
     top_felony_crimes_neighborhood = felony_crimes_neighborhood['ofns_desc'].value_counts().head(5)
-    return top_felony_crimes_neighborhood
+    
+    # Convert to a dictionary with 'ofns_desc' as keys and counts as values
+    return top_felony_crimes_neighborhood.to_dict()
 
 #Task 3
 def calculate_crime_rates(neighborhood_name):

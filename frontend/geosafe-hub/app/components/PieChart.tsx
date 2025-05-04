@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const COLORS = ["#60A5FA", "#34D399", "#FBBF24", "#F87171"]
-
-export default function PieChartComp({data}: {data: { category: string; count: number }[] }) {
-
+export default function PieChartComp({
+  data,
+}: {
+  data: { category: string; count: number; color: string }[];
+}) {
   return (
-  
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
         <Pie
@@ -16,19 +16,16 @@ export default function PieChartComp({data}: {data: { category: string; count: n
           nameKey="category"
           cx="50%"
           cy="50%"
-          outerRadius={90}
+          outerRadius="80%"
           fill="#8884d8"
-          label
+          label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
         >
-          {data.map((entry, index) => (
-            <Cell key={entry.category} fill={COLORS[index % COLORS.length]} />
+          {data.map((entry) => (
+        <Cell key={entry.category} fill={entry.color} />
           ))}
         </Pie>
         <Tooltip />
-        <Legend />
       </PieChart>
-      
     </ResponsiveContainer>
-    
-  )
+  );
 }

@@ -25,14 +25,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
         Optionally filter reviews by the authenticated user.
         """
         user = self.request.user
-        if user.is_authenticated:
-            return Review.objects.filter(user=user)  # Show only the user's reviews
+        # if user.is_authenticated:
+        #     return Review.objects.filter(user=user)  # Show only the user's reviews
+        #
         return Review.objects.all()  # Show all reviews for unauthenticated users
 
     def perform_create(self, serializer):
         """
         Automatically associate the review with the authenticated user.
         """
+        print("Incoming data:", serializer.validated_data)  # Log the validated data
         serializer.save(user=self.request.user)
         
 class ReviewListView(APIView):
@@ -42,12 +44,10 @@ class ReviewListView(APIView):
         ntaname = request.query_params.get('ntaname', None)
 
         # Filter reviews based on boroname or ntaname
-        if boroname:
-            reviews = Review.objects.filter(boroname=boroname)
-        elif ntaname:
-            reviews = Review.objects.filter(ntaname=ntaname)
+        if boroname and ntaname:
+            reviews = Review.objects.filter(boroname=boroname,ntaname=ntaname)
         else:
-            return Response({"error": "Please provide either 'boroname' or 'ntaname' as a query parameter."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Please provide either 'boroname' and 'ntaname' as a query parameter."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Serialize the data
         serializer = ReviewSerializer(reviews, many=True)
