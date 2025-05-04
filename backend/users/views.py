@@ -1,4 +1,5 @@
 
+from datetime import time
 import re
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -185,12 +186,12 @@ class EmergencyAlert(APIView):
                 continue  # Skip this contact if carrier is invalid
 
             sms_gateway = f"{phone}{SMS_GATEWAYS[carrier]}"
-            message_body = "Test" 
+            message_body =f"{full_name} needs help. Location: {location}"
           
            
             try:
                 send_mail(
-                    subject="Emergency Alert",  # No subject for SMS
+                    subject=f"{full_name} needs help. Location: {location}",  
                     message=message_body,
                     from_email=settings.EMAIL_HOST_USER,  # Use configured sender email
                     recipient_list=[sms_gateway],  # Recipient is phone + carrier gateway
@@ -198,6 +199,7 @@ class EmergencyAlert(APIView):
                 )
                 print(f"Message sent to {sms_gateway}")
                 success_count += 1
+                time.sleep(5)
             except Exception as e:
                 print(f"SMTP error: {e}")
                 error_contacts.append(phone)

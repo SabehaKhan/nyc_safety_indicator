@@ -1,5 +1,5 @@
 "use client";
-
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,7 +13,33 @@ import Footer from "../components/footer";
 import ReviewList from "../components/review-list";
 import CrimeChartSection from "../components/CrimeStats";
 import AxiosInstanceAny from "@/components/AxiosInstanceAny";
+import Axios from "axios";
+const reverseGeocode = async (latitude: number, longitude: number) => {
+  try {
+    const response = await Axios.get(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+    );
+    return response.data.address.neighbourhood || response.data.address.suburb || response.data.address.city;
+  } catch (error) {
+    console.error("Reverse geocoding failed:", error);
+    return null;
+  }
+};
 
+// Function to determine current neighborhood
+const getCurrentNeighborhood = (callback: (neighborhood: string | null) => void) => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const neighborhood = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        callback(neighborhood);
+      },
+      () => callback(null) // Fallback if geolocation fails
+    );
+  } else {
+    callback(null);
+  }
+};
 export default function SafetyReportPage() {
    // NYC locations data
    const nycLocations = 
@@ -30,8 +56,11 @@ export default function SafetyReportPage() {
   type LocationType =
     | typeof nycLocations.boroughs[number]
     | keyof typeof nycLocations.neighborhoods;
-
-  const [selectedLocation, setSelectedLocation] = useState<LocationType>("Woodside");
+  const searchParams = useSearchParams();
+  const location = searchParams.get("location");
+  const [selectedLocation, setSelectedLocation] = useState<LocationType>(
+    location ? (location as LocationType) : "Brownsville"
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // For search in dropdown
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]); // For dropdown search
