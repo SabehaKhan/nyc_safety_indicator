@@ -6,9 +6,12 @@ import pandas as pd
 import numpy as np
 import joblib
 from math import radians, sin, cos, sqrt, atan2
+import pickle
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')  # Replace 'server' with your project name
 django.setup()
+
+
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -219,36 +222,32 @@ def calculate_borough_safety_index(boroname):
 #Task 6
 def calculate_ntaname_safety_index(ntaname):
     df=get_crime_data()
-    crime_data = df.groupby("ntaname").agg({
-        "adjusted_crime_weight": "sum",
-        "population": "first"
-    }).reset_index()
+    PATH=os.path.join(os.path.dirname(__file__), "nta_data.pkl")
 
-    # Drop neighborhoods with missing or zero population
-    crime_data = crime_data.dropna(subset=["population"])
-    crime_data = crime_data[crime_data["population"] > 0]
+    with open(PATH, "rb") as f:
+        nta_data = pickle.load(f)
+    # # Example usage
+    # print(nta_data["Harlem"])
+    # {'radius_mi': 0.8384, 'center_lat': 40.728817, 'center_lon': -73.948447}
 
-    # Calculate weighted crime rate per 1,000 residents
-    crime_data["weighted_crime_rate"] = (crime_data["adjusted_crime_weight"] / crime_data["population"]) * 1000
-
-    # Normalize the weighted crime rate
-    min_rate = crime_data["weighted_crime_rate"].min()
-    max_rate = crime_data["weighted_crime_rate"].max()
-
-    if max_rate == min_rate:
-        crime_data["normalized_weighted_rate"] = 0
-    else:
-        crime_data["normalized_weighted_rate"] = (crime_data["weighted_crime_rate"] - min_rate) / (max_rate - min_rate)
-
-    # Invert normalized crime rate to compute safety index
-    crime_data["safety_index"] = (1 - crime_data["normalized_weighted_rate"]) * 100
-
-    # Filter for the specific ntaname
-    neighborhood_safety = crime_data[crime_data['ntaname'] == ntaname]
-
-    if neighborhood_safety.empty:
+    # Get the radius and center coordinates for the specified ntaname
+    if ntaname not in nta_data:
         return {"error": f"No data found for ntaname: {ntaname}"}
+    radius = nta_data[ntaname]["radius_mi"]
+    center_lat = nta_data[ntaname]["center_lat"]
+    center_lon = nta_data[ntaname]["center_lon"]
+    # Calculate the safety index
+    safety_index = predict_safety(center_lat, center_lon, model=load_model(), radius=radius)
 
-    # Return only the safety index for the specific ntaname
-    return neighborhood_safety['safety_index'].iloc[0]
-    #return crime_data[["ntaname","safety_index"]].sort_values(by='safety_index', ascending=False)
+    # Normalize the safety index based on the population
+    neighborhood_population = df[df['ntaname'] == ntaname]['population'].iloc[0]
+    if neighborhood_population > 0:
+        normalized_safety_index = (safety_index / neighborhood_population) * 100000
+    else:
+        normalized_safety_index = safety_index  # Handle cases where population is zero
+    if normalized_safety_index> 100:
+        normalized_safety_index = 100
+    elif normalized_safety_index < 0:
+        normalized_safety_index = 0
+
+    return normalized_safety_index
