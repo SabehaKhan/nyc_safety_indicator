@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = False #changed for production
 
-ALLOWED_HOSTS =  ['127.0.0.1', 'localhost','159.203.64.170','nycsafetyindicator.vercel.app'] 
+ALLOWED_HOSTS =  ['127.0.0.1', 'localhost','nyc-safety-indicator.software','nycsafetyindicator.vercel.app'] 
 
 # Application definition
 
@@ -86,7 +86,9 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'https://nycsafetyindicator.vercel.app',
+    'https://nyc-safety-indicator.software'
 ]
 AUTH_USER_MODEL = 'users.CustomUser'
 ROOT_URLCONF = "server.urls"
