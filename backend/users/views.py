@@ -1,4 +1,3 @@
-
 from datetime import time
 import re
 from rest_framework import viewsets
@@ -305,12 +304,15 @@ def google_login(request):
                 defaults={
                     'first_name': first_name,
                     'last_name': last_name,
-                    'password': None  # Use whatever password strategy you prefer
+    
                 }
             )
 
             # Update name if user existed
-            if not created:
+            if created:
+                user.set_unusable_password()
+                user.save()
+            else:
                 user.first_name = first_name
                 user.last_name = last_name
                 user.save()
