@@ -42,25 +42,22 @@ const SearchBar: React.FC<SearchBarProps> = ({ onNeighborhoodSelect }) => {
     }
   }, [searchTerm]);
 
-  const formatUrlSlug = (location: string) => {
-    return location.toLowerCase().replace(/[\s]+/g, "-");
-  };
-
   const handleSelect = (location: string) => {
     setSearchTerm("");
     setSuggestions([]);
 
-    const urlSlug = formatUrlSlug(location);
-
+    // Redirect using query parameters and force a page refresh
     if (pathname.startsWith("/safety-report")) {
-      router.push(`/safety-report/${urlSlug}`);
+      router.push(`/safety-report?location=${encodeURIComponent(location)}`);
+      window.location.reload(); // Force a full page reload
     } else if (pathname === "/map") {
       if (onNeighborhoodSelect) {
         onNeighborhoodSelect(location);
       }
-      //trigger map nav / sidebar update
+      // Trigger map navigation or sidebar update
     } else if (pathname === "/") {
-      router.push(`/safety-report/${urlSlug}`);
+      router.push(`/safety-report?location=${encodeURIComponent(location)}`);
+      window.location.reload(); // Force a full page reload
     }
   };
 
