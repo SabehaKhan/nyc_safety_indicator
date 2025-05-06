@@ -10,9 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = True
+DEBUG = False #changed for production
 
-ALLOWED_HOSTS =  ['127.0.0.1', 'localhost'] 
+ALLOWED_HOSTS =  ['127.0.0.1', 'localhost','159.203.64.170','nycsafetyindicator.vercel.app'] 
 
 # Application definition
 
@@ -122,7 +122,7 @@ DATABASES = {
 
 # Manually add search_path to OPTIONS
 DATABASES["default"]["OPTIONS"] = {
-    "options": "-c search_path=user_database"
+    "options": "-c search_path=public"
 }
 
 
@@ -153,6 +153,7 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
