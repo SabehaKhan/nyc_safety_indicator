@@ -9,7 +9,19 @@ from rest_framework import status
 from model.utils import calculate_borough_safety_index, calculate_ntaname_safety_index, get_top_crimes_in_neighborhood,get_top_felony_crimes_in_neighborhood
 from model.utils import get_crime_breakdown, get_crime_data, predict_safety
 from .models import ArrestData
+import pickle
+import os
+pkl_path = os.path.join(os.path.dirname(__file__), '..', 'model', 'safety_index_dict_from_txt.pkl')
+with open(pkl_path, 'rb') as f:
+    ntaname_dict = pickle.load(f)
 # Create your views here.
+
+class SafetyIndexDictView(APIView):
+    permission_classes = [AllowAny]  # Allow access to anyone
+
+    def get(self, request):
+        # Return the ntaname_dict as JSON
+        return Response(ntaname_dict, status=status.HTTP_200_OK)
 
 class SafetyScoreView(APIView):
     permission_classes = [AllowAny]  # Allow access to anyone
@@ -28,9 +40,12 @@ class SafetyScoreView(APIView):
                 return Response({"safety_score": safety_score}, status=status.HTTP_200_OK)
 
             elif ntaname:
-                # Calculate safety score for a specific neighborhood
-                safety_score = round(calculate_ntaname_safety_index(ntaname))
-                return Response({"safety_score": safety_score}, status=status.HTTP_200_OK)
+                # Use precomputed safety score for a specific neighborhood
+                safety_score = round(ntaname_dict.get(ntaname))
+                if safety_score is not None:
+                    return Response({"safety_score": safety_score}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": f"No safety score found for ntaname '{ntaname}'."}, status=status.HTTP_404_NOT_FOUND)
 
             elif lat and lon:
                 # Validate latitude and longitude
