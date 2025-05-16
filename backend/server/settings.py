@@ -10,9 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = False #changed for production
+DEBUG = True #changed for production
 
-ALLOWED_HOSTS =  ['127.0.0.1', 'localhost','nyc-safety-indicator.software','nycsafetyindicator.vercel.app'] 
+ALLOWED_HOSTS =  ['127.0.0.1', 'localhost','nyc-safety-indicator.software',
+'nycsafetyindicator.vercel.app','www.nyc-safety-indicator.software','159.203.64.170'] 
 
 # Application definition
 
@@ -88,8 +89,9 @@ LOGOUT_REDIRECT_URL = '/'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://nycsafetyindicator.vercel.app',
-    'https://nyc-safety-indicator.software'
+    'https://nyc-safety-indicator.software',
 ]
+CORS_ALLOW_CREDENTIALS = True
 AUTH_USER_MODEL = 'users.CustomUser'
 ROOT_URLCONF = "server.urls"
 MAIL_GUN = os.getenv("MAIL_GUN_API")
